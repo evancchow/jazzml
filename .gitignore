@@ -1,0 +1,10 @@
+# Ignore everything
+*
+
+# Except .py, .ipynb, .txt files, .mid files
+!*.ipynb
+!*.txt
+!*.py
+!*.mid
+!*.md
+!.gitignore
