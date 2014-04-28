@@ -42,16 +42,10 @@ allchords = []
 for ix, voice in enumerate(singlepart.getElementsByClass(stream.Voice)):
     notes = voice.getElementsByClass(note.Note).notes
     chords = voice.getElementsByClass(chord.Chord)
-    # print "\n--Voice %s--\n" % ix
     for i in notes:
-        # if float(i.offset) > 7: continue
         allnotes.append(i)
-        # print "%s,%s,%s,%s" % (i.name, i.octave,
-        #     i.quarterLength, float(i.offset))
     for i in chords:
-        # if float(i.offset) > 7: continue
         allchords.append(i)
-        # print "%s,%s, ,%s" % (i.fullName, i.pitchedCommonName, float(i.offset))
 
 print mmark.number
 print "%s / %s" % (timesig.numerator, timesig.denominator)
