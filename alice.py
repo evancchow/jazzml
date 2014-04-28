@@ -35,19 +35,33 @@ from music21 import *
 
 alice = converter.parse('./alice.mid')
 singlepart = alice[0]
-allnotes = []
 timesig = alice[0].getElementsByClass(meter.TimeSignature)[0]
 mmark = alice[0].getElementsByClass(tempo.MetronomeMark)[0]
+allnotes = []
+allchords = []
+for ix, voice in enumerate(singlepart.getElementsByClass(stream.Voice)):
+    notes = voice.getElementsByClass(note.Note).notes
+    chords = voice.getElementsByClass(chord.Chord)
+    # print "\n--Voice %s--\n" % ix
+    for i in notes:
+        # if float(i.offset) > 7: continue
+        allnotes.append(i)
+        # print "%s,%s,%s,%s" % (i.name, i.octave,
+        #     i.quarterLength, float(i.offset))
+    for i in chords:
+        # if float(i.offset) > 7: continue
+        allchords.append(i)
+        # print "%s,%s, ,%s" % (i.fullName, i.pitchedCommonName, float(i.offset))
+
 print mmark.number
 print "%s / %s" % (timesig.numerator, timesig.denominator)
-print "Note/Rest,Octave,Len,Offset"
-for voice in singlepart.getElementsByClass(stream.Voice):
-    notes = voice.getElementsByClass(note.Note).notes
-    print "\n--Voice--\n"
-    j = 0
-    for i in notes:
-        if j > 100: break
-        print "%s,%s,%s,%s" % (i.name, i.octave,
-            i.quarterLength, float(i.offset))
 
-        j+=1
+# toggle with printing out chords below > alicenotes.txt
+print "Note/Rest,Octave,Len,Offset"
+for i in allnotes:
+    print "%s,%s,%s,%s" % (i.name, i.octave, i.quarterLength, float(i.offset))
+
+# toggle with printing out notes above > alicechords.txt
+# print "FullName,CommonName,Len,Offset"
+# for i in allchords:
+#     print "%s,%s,%s,%s" % (i.fullName, i.pitchedCommonName, i.quarterLength, float(i.offset))
