@@ -58,4 +58,5 @@ for i in allnotes:
 # toggle with printing out notes above > alicechords.txt
 # print "FullName,CommonName,Len,Offset"
 # for i in allchords:
-#     print "%s,%s,%s,%s" % (i.fullName, i.pitchedCommonName, i.quarterLength, float(i.offset))
+#     print "%s,%s,%s,%s" % (i.fullName, 
+#       i.pitchedCommonName, i.quarterLength, float(i.offset))
