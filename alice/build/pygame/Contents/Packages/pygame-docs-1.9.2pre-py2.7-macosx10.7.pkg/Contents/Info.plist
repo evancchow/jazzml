@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleGetInfoString</key>
+	<string>pygame-docs-py2.7-macosx10.7 1.9.2pre</string>
+	<key>CFBundleIdentifier</key>
+	<string>org.pythonmac.pygame-docs-py2.7-macosx10.7</string>
+	<key>CFBundleName</key>
+	<string>pygame-docs-py2.7-macosx10.7</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.9.2pre</string>
+	<key>IFMajorVersion</key>
+	<integer>1</integer>
+	<key>IFMinorRevision</key>
+	<integer>9</integer>
+	<key>IFPkgFlagAllowBackRev</key>
+	<false/>
+	<key>IFPkgFlagAuthorizationAction</key>
+	<string>AdminAuthorization</string>
+	<key>IFPkgFlagDefaultLocation</key>
+	<string>/Developer/Python/pygame/Documentation</string>
+	<key>IFPkgFlagFollowLinks</key>
+	<true/>
+	<key>IFPkgFlagInstallFat</key>
+	<false/>
+	<key>IFPkgFlagIsRequired</key>
+	<false/>
+	<key>IFPkgFlagOverwritePermissions</key>
+	<false/>
+	<key>IFPkgFlagRelocatable</key>
+	<false/>
+	<key>IFPkgFlagRestartAction</key>
+	<string>NoRestart</string>
+	<key>IFPkgFlagRootVolumeOnly</key>
+	<true/>
+	<key>IFPkgFlagUpdateInstalledLangauges</key>
+	<false/>
+	<key>IFPkgFormatVersion</key>
+	<real>0.10000000149011612</real>
+	<key>IFRequirementDicts</key>
+	<array>
+		<dict>
+			<key>Level</key>
+			<string>requires</string>
+			<key>SpecArgument</key>
+			<string>/</string>
+			<key>SpecProperty</key>
+			<string>NSFileType</string>
+			<key>SpecType</key>
+			<string>file</string>
+			<key>TestObject</key>
+			<string>NSFileTypeDirectory</string>
+			<key>TestOperator</key>
+			<string>eq</string>
+		</dict>
+	</array>
+	<key>PythonInfoDict</key>
+	<dict>
+		<key>PythonExecutable</key>
+		<string>/System/Library/Frameworks/Python.framework/Versions/2.7/Resources/Python.app/Contents/MacOS/Python</string>
+		<key>PythonLongVersion</key>
+		<string>2.7.1 (r271:86832, Jun 16 2011, 16:59:05) 
+[GCC 4.2.1 (Based on Apple Inc. build 5658) (LLVM build 2335.15.00)]</string>
+		<key>PythonShortVersion</key>
+		<string>2.7</string>
+		<key>bdist_mpkg</key>
+		<dict>
+			<key>version</key>
+			<string>0.4.3</string>
+		</dict>
+	</dict>
+</dict>
+</plist>
