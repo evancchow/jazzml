@@ -36,13 +36,23 @@ for ix, voice in enumerate(singlepart.getElementsByClass(stream.Voice)):
 print mmark.number
 print "%s / %s" % (timesig.numerator, timesig.denominator)
 
-# toggle with printing out chords below > oscar2notes.txt
-# print "Note/Rest,Octave,Len,Offset"
-# for i in allnotes:
-#     print "%s,%s,%s,%s" % (i.name, i.octave, i.quarterLength, float(i.offset))
 
-# toggle with printing out notes above > oscar2chords.txt
+""" Comment/uncomment the two sections (1), (2) below with 
+	the relevant command line arguments to create either 
+	the chord or note files for the MIDI data. Update 
+	later with StdIn. """
+
+# 1. Get chords.
+# $ python oscar2.py > oscar2chords.txt
+# Toggle section below
 print "FullName,CommonName,Len,Offset"
 for i in allchords:
     print "%s,%s,%s,%s" % (i.fullName, 
       i.pitchedCommonName, i.quarterLength, float(i.offset))
+
+# 2. Get notes.
+# $ python oscar2.py > oscar2notes.txt
+# Toggle section below
+# print "Note/Rest,Octave,Len,Offset"
+# for i in allnotes:
+#     print "%s,%s,%s,%s" % (i.name, i.octave, i.quarterLength, float(i.offset))
