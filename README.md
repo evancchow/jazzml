@@ -1,4 +1,4 @@
-JAZZML: Statistical Jazz Improvisation
+JazzML: Statistical Jazz Improvisation
 ======
 
 Final project for COS 401: Introduction to Machine Translation. Computer jazz improvisation powered by machine learning,
