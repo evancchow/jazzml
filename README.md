@@ -25,6 +25,8 @@ In addition, you'll need a couple of specialized music libraries for Python:
 
 ----------
 
+Check out the subdirectory "./presentationfiles" if you'd like to see some pictures of generated vs. original music.
+
 If you're new here: Included is a sample MIDI file (Oscar-Peterson-2.mid) for analysis and generation. For a quick demo, go to the subdirectory "./oscar/oscar2" and run things in this order (assuming you have the dependencies):
 
 First, run the script oscar2.py as:
