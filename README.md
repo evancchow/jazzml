@@ -4,7 +4,7 @@ JazzML: Statistical Jazz Improvisation
 Final project for COS 401: Introduction to Machine Translation. Computer jazz improvisation powered by machine learning,
 specifically trigram modeling, K-Means clustering, and chord inference with SVMs.
 
-Messy code + needs to be better modularized.
+Needs to be better modularized.
 
 Dependencies:
 <ul>
