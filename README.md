@@ -25,7 +25,19 @@ In addition, you'll need a couple of specialized music libraries for Python:
 
 ----------
 
+If you just want to read about my work (without running any code), please use the nbviewer for iPython notebooks 6a and 6b, which document the full process (except for parsing the raw MIDI data). Here are the links to my work:
+
+Notebook 1:
+http://nbviewer.ipython.org/github/evancchow/jazzml/blob/master/oscar/oscar2/6a.%20The%20N-Gram%20Pipeline%2C%20Part%20I.ipynb?create=1
+
+Notebook 2:
+http://nbviewer.ipython.org/github/evancchow/jazzml/blob/master/oscar/oscar2/6b.%20The%20N-Gram%20Pipeline%2C%20Part%20II.ipynb?create=1
+
 Check out the subdirectory "./presentationfiles" if you'd like to see some pictures of generated vs. original music.
+
+I worked mainly in the subdirectory "./oscar/oscar2", so all of my main code is over there (although it's in iPython files, so you'll have to either get iPython or view the ipython files with http://nbviewer.ipython.org/.
+
+----------
 
 If you're new here: Included is a sample MIDI file (Oscar-Peterson-2.mid) for analysis and generation. For a quick demo, go to the subdirectory "./oscar/oscar2" and run things in this order (assuming you have the dependencies):
 
