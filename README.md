@@ -30,9 +30,9 @@ If you just want to read about my work (without running any code), please use th
 Go into the directory:
 http://nbviewer.ipython.org/github/evancchow/jazzml/tree/master/oscar/oscar2/
 
-In that directory, take a look at:br>
+In that directory, take a look at:<br>
 Notebook 1, getting the notes and generating the n-grams: 6a. The N-Gram Pipeline Part I.<br>
-Notebook 2, all the advanced clustering/classification for the ngrams: 6b. The N-Gram Pipeline, Part II.br>
+Notebook 2, all the advanced clustering/classification for the ngrams: 6b. The N-Gram Pipeline, Part II.<br>
 Notebook 3, creating and training the SVM needed for (6b): 7. Predictive Chord Modeling with Bitwise Note Vectors.
 
 Check out the subdirectory "./presentationfiles" if you'd like to see some pictures of generated vs. original music.
