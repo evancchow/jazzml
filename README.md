@@ -27,14 +27,13 @@ In addition, you'll need a couple of specialized music libraries for Python:
 
 If you just want to read about my work (without running any code), please use the nbviewer for iPython notebooks 6a and 6b, which document the full process (except for parsing the raw MIDI data). Here are the links to my work:
 
-Notebook 1, getting the notes and generating the n-grams:
-http://nbviewer.ipython.org/github/evancchow/jazzml/blob/master/oscar/oscar2/6a.%20The%20N-Gram%20Pipeline%2C%20Part%20I.ipynb?create=1
+Go into the directory:
+http://nbviewer.ipython.org/github/evancchow/jazzml/tree/master/oscar/oscar2/
 
-Notebook 2, all the advanced clustering/classification for the n-grams:
-http://nbviewer.ipython.org/github/evancchow/jazzml/blob/master/oscar/oscar2/6b.%20The%20N-Gram%20Pipeline%2C%20Part%20II.ipynb?create=1
-
-Notebook 3, creating and training the SVM:
-http://nbviewer.ipython.org/github/evancchow/jazzml/blob/master/oscar/oscar2/7.%20Predictive%20Chord%20Modeling%20with%20Bitwise%20Note%20Vectors.ipynb?create=1
+In that directory, take a look at:
+Notebook 1, getting the notes and generating the n-grams: 6a. The N-Gram Pipeline Part I.
+Notebook 2, all the advanced clustering/classification for the ngrams: 6b. The N-Gram Pipeline, Part II.
+Notebook 3, creating and training the SVM needed for (6b): 7. Predictive Chord Modeling with Bitwise Note Vectors.
 
 Check out the subdirectory "./presentationfiles" if you'd like to see some pictures of generated vs. original music.
 
