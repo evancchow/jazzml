@@ -35,6 +35,8 @@ Notebook 1, getting the notes and generating the n-grams: 6a. The N-Gram Pipelin
 Notebook 2, all the advanced clustering/classification for the ngrams: 6b. The N-Gram Pipeline, Part II.<br>
 Notebook 3, creating and training the SVM needed for (6b): 7. Predictive Chord Modeling with Bitwise Note Vectors.
 
+For viewing those notebooks, if you get a 400 error on the nbviewer, refresh the page once or twice. Working on this error.
+
 Check out the subdirectory "./presentationfiles" if you'd like to see some pictures of generated vs. original music.
 
 I worked mainly in the subdirectory "./oscar/oscar2", so all of my main code is over there (although it's in iPython files, so you'll have to either get iPython or view the ipython files with http://nbviewer.ipython.org/.
