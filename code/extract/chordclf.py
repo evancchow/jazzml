@@ -2,8 +2,12 @@
     *chords.txt and *notes.txt, reads in the chord data, and trains 
     a classifier to fit the notes. Returns the classifier. """
 
-from collections import Counter, defaultdict
+from sklearn.svm import SVC
+from sklearn.grid_search import GridSearchCV
+from sklearn.cross_validation import train_test_split
+from sklearn import metrics
 from sklearn.cluster import KMeans
+from collections import Counter, defaultdict
 from mingus.midi import fluidsynth
 from mingus.containers import NoteContainer
 from mingus.containers.Bar import Bar
@@ -79,8 +83,6 @@ def makeChordClf(filename_chords, filename_notes):
             xdata = np.vstack((xdata, genChordNotes(chord)))
     ydata = allChords.keys()
 
-    print "Before adding random data: ", xdata.shape, len(ydata)
-
     # create more randomized data
     for chordID, chord in allChords.items():
         for j in xrange(50): 
@@ -88,6 +90,17 @@ def makeChordClf(filename_chords, filename_notes):
             ydata.append(chordID)
     ydata = np.array(ydata).reshape(-1, )
 
-    print "After adding random data: ", xdata.shape, ydata.shape
+    # Create train, test sets
+    xtrain, xtest, ytrain, ytest = train_test_split(xdata, 
+        ydata, test_size=0.2, random_state=50)
 
+    # Use gridsearch to build the classifier. Change verbose GridSearchCV param to True if want progress on the processing.
+    grid_search = GridSearchCV(estimator=SVC(), 
+        param_grid={'kernel' : ('linear', 'rbf'), 
+        'C' : np.linspace(0.1, 5.1, 10)}, n_jobs=-2)
 
+    # Train the classifier
+    grid_search.fit(xtrain, ytrain)
+
+    # Return the classifier, and the chord dict
+    return grid_search, allChords
