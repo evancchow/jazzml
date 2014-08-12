@@ -1,60 +1,32 @@
-""" Extract note and chord information from oscar MIDI #1. """
-""" Structure for Oscar-Peterson-2.mid:
-	
-	Score
-		Part
-			MetronomeMark
-			TimeSignature
-			Voice
-			Voice
-			Voice
-			Voice
-			Voice
-			Voice
-			Voice
-			Voice
-			Piano
-	
-	See below sections for the execution.
-															"""
+""" The master client file. Given your well-structured modules in the
+    relative subfolders, this Python script from start to finish
+    simulates jazz improvisation. """
 
-from music21 import *
+# Imports
+import sys
+sys.path.append('./code/extract/')
+from parseraw import parseRawFile
 
-oscar2 = converter.parse('./Oscar-Peterson-2.mid')
+# Parse the MIDI data.
+filename = './Oscar-Peterson-2.mid'
+metronomeNum, timeSig, allChords, allNotes = parseRawFile(filename)
 
-singlepart = oscar2[0]
-timesig = singlepart.getElementsByClass(meter.TimeSignature)[0]
-mmark = singlepart.getElementsByClass(tempo.MetronomeMark)[0]
-allnotes = []
-allchords = []
-for ix, voice in enumerate(singlepart.getElementsByClass(stream.Voice)):
-    notes = voice.getElementsByClass(note.Note).notes
-    chords = voice.getElementsByClass(chord.Chord)
-    for i in notes:
-        allnotes.append(i)
-    for i in chords:
-        allchords.append(i)
+# Write out notes to a text file. 
+# Ideally, you'll be able to keep everything
+# in RAM eventually, so no need for intermediate text files.
+with open('oscar2notes.txt', 'wb') as f:
+    f.write("%s\n" % metronomeNum)
+    f.write("%s\n" % timeSig)
+    f.write("Note/Rest,Octave,Len,Offset\n")
+    for i in allNotes:
+        f.write("%s,%s,%s,%s\n" % (i.name, 
+            i.octave, i.quarterLength, float(i.offset)))
 
-print mmark.number
-print "%s / %s" % (timesig.numerator, timesig.denominator)
-
-
-""" Comment/uncomment the two sections (1), (2) below with 
-	the relevant command line arguments to create either 
-	the chord or note files for the MIDI data. Update 
-	later with StdIn. """
-
-# 1. Get chords.
-# $ python oscar2.py > oscar2chords.txt
-# Toggle section below
-print "FullName,CommonName,Len,Offset"
-for i in allchords:
-    print "%s,%s,%s,%s" % (i.fullName, 
-      i.pitchedCommonName, i.quarterLength, float(i.offset))
-
-# 2. Get notes.
-# $ python oscar2.py > oscar2notes.txt
-# Toggle section below
-# print "Note/Rest,Octave,Len,Offset"
-# for i in allnotes:
-#     print "%s,%s,%s,%s" % (i.name, i.octave, i.quarterLength, float(i.offset))
+# Write out chords to a text file.
+with open('oscar2chords.txt', 'wb') as f:
+    f.write("%s\n" % metronomeNum)
+    f.write("%s\n" % timeSig)
+    f.write("FullName,CommonName,Len,Offset\n")
+    for i in allChords:
+        f.write("%s,%s,%s,%s\n" % (i.fullName,
+            i.pitchedCommonName, i.quarterLength, float(i.offset)))
