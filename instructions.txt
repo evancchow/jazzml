@@ -1,1 +1,0 @@
-Assuming your libraries are set up, this is the minimal you need to run the jazz ML project. The text files are created by the program, of course - you only ned the .py, .ipynb, and the .mid files.
