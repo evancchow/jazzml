@@ -9,7 +9,9 @@ def parseRawFile(filename):
         1) The metronome number
         2) The time signature
         3) List of all the chords
-        4) List of all the notes """
+        4) List of all the notes 
+
+        // TODO: Make this recursive so it finds all chords and notes. """
 
     # Get the musical information.
     oscar2 = converter.parse(filename)

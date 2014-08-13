@@ -4,20 +4,24 @@
 
     Distraction-free mode in Sublime Text 2: shift + F11 (toggle)
 
+    To run from interpreter:
+    > from oscar2 import *
+
+    then you can access variables etc.
+
                                                                 """
 
 # Imports
 import sys
 import pandas as pd
+sys.path.append('C:/Python27/Lib/site-packages')
+from nltk import *
+
+# My imports
 sys.path.append('./code/extract/')
 sys.path.append('./code/ngram')
 from parseraw import parseRawFile
-from chordclf import makeChordClf
-from generate import genNGrams
-
-from chordclf_music import mingifytext
-from mingus.midi import fluidsynth
-sys.path.append('C:/Python27/Lib/site-packages')
+from generate import *
 
 """ Part 1: Parse the MIDI data, and get the chords/notes into text files. """
 
@@ -26,40 +30,44 @@ sys.path.append('C:/Python27/Lib/site-packages')
 filename = './Oscar-Peterson-2.mid'
 metronomeNum, timeSig, allChords, allNotes = parseRawFile(filename)
 
-# ## Write out notes to a text file. 
-# ## Ideally, you'll be able to keep everything
-# ## in RAM eventually, so no need for intermediate text files.
-with open('oscar2notes.txt', 'wb') as f:
-    f.write("%s\n" % metronomeNum)
-    f.write("%s\n" % timeSig)
-    f.write("Note/Rest,Octave,Len,Offset\n")
-    for i in allNotes:
-        f.write("%s,%s,%s,%s\n" % (i.name, 
-            i.octave, i.quarterLength, float(i.offset)))
+# Notes and lengths, i.e. how long note is.
+# Remember to generate the unigrams, bigrams, trigrams and run Text.generate() on them.
+notes = [("%s%s" % (i.name, i.octave)) for i in allNotes]
+notelens = [i.quarterLength for i in allNotes]
 
-# ## Write out chords to a text file.
-with open('oscar2chords.txt', 'wb') as f:
-    f.write("%s\n" % metronomeNum)
-    f.write("%s\n" % timeSig)
-    f.write("FullName,CommonName,Len,Offset\n")
-    for i in allChords:
-        f.write("%s,%s,%s,%s\n" % (i.fullName,
-            i.pitchedCommonName, i.quarterLength, float(i.offset)))
+# Chords and lengths, i.e. how long chord is.
+# Might want function just for parsing the 
+chords = [' '.join(s for s in str(i.sortDiatonicAscending(inPlace=True))
+        .replace('<music21.chord.Chord ','')
+        .replace('>','').split(' ') if (int(s[-1]) < 6))
+         for i in allChords]
+chordlens = [i.quarterLength for i in allChords]
 
-""" Re-read in the notes, generate n-grams, etc. """
 
-## Read in the chords to get the classifier and the chord dictionary.
-filename_chords = 'oscar2chords.txt'
-filename_notes = 'oscar2notes.txt'
-grid_search, chordDict = makeChordClf(filename_chords, filename_notes)
+""" Generate the N-grams for the notes and chords. 
+    Also generate the probabilities for the n-grams. 
 
-## Read in oscar's notes again.
-oscar2 = pd.read_csv('oscar2notes.txt', skiprows=2)[:].sort("Offset")
-oscar2.index = xrange(1, len(oscar2) + 1)
-oscar2 = oscar2[oscar2.Octave >= 4] # threshold >= octave 4 for melodies
-with open('oscar2notes.txt', 'rb') as f:
-    metmark = float(f.readline())
-    tsig_num, tsig_den = [i for i in f.readline().replace(' /', '').split()]
+    For each n-gram (n=[2, 3]) entry, create probability
+    relative to that n-gram total. For example, if there are
+    a total of 50 n-grams (w/duplicates) and [i, am] appears twice,
+    then the probability for that is 2/50. 
 
-## Generate the n-grams.
-ngrams = genNGrams(oscar2)
+    Then for the actual note generation, you'll pick either unigrams,
+    bigrams, or trigrams with weighted probabilites (should chain them
+    together for longer passages of notes - for example, bigram
+    with elements [a, b] should lead into bigram with elements [b, c]
+    where b is shared between both.
+
+    notesNgram = a list of the ngrams (w/duplicates)
+    notesNgramProbs = dictionary of unique n-gram, probabilities """
+
+## Unigram notes and probabilities.
+
+## Bigram notes and probabilities.
+notesBigram = genNGrams(notes, 2)
+# notesBigramProbs = genNGramProbs(notesBigram)
+
+## Trigram notes and probbilities.
+notesTrigram = genNGrams(notes, 3)
+# notesTrigramProbs = genNGramProbs(notesTrigram)
+
