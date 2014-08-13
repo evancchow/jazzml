@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IFPkgDescriptionDescription</key>
+	<string>Python Game Development</string>
+	<key>IFPkgDescriptionTitle</key>
+	<string>pygame 1.9.2pre</string>
+	<key>IFPkgDescriptionVersion</key>
+	<string>1.9.2pre</string>
+</dict>
+</plist>

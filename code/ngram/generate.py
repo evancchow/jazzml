@@ -3,19 +3,12 @@
 from collections import Counter, defaultdict
 from sklearn.cluster import KMeans, Ward, AffinityPropagation
 from itertools import izip, izip_longest, groupby
-from mingus.midi import fluidsynth
-from mingus.containers import NoteContainer
-from mingus.containers.Bar import Bar
-import mingus.core.notes as notes
-import mingus.core.value as value
 import music21
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import sys, re, itertools, random, copy
 sys.path.append('C:/Python27/Lib/site-packages')
-sys.path.append('/usr/local/lib/python2.7/dist-packages/fluidsynth/')
-fluidsynth.init('/usr/share/sounds/sf2/FluidR3_GM.sf2',"alsa")
 
 """ 1. Get generated notes based on the trigram model. """
 
@@ -217,7 +210,7 @@ def genNGrams(oscar2):
         D           5        0.750000   12.666
         ... 
         Feed in the dataframe to this function, and it will
-        return the n-grams. """
+        return the n-grams as a list of tuples (note, offset). """
 
     """ The script to generate the notes."""
 
@@ -292,7 +285,8 @@ def genNGrams(oscar2):
     gennotes = rmDuplicates(gennotes)
 
     # Assert that you got the right # of notes.
-    print "# of notes generated after pruning: %s" % len(gennotes)
-    with open("oscar2ngrams.txt", 'wb') as f:
-        for note, length in zip(gennotes, genoffsets):
-            f.write("%s,%s\n" % (note, length))
+    return ((note, length) for note, length in zip(gennotes, genoffsets))
+    # print "# of notes generated after pruning: %s" % len(gennotes)
+    # with open("oscar2ngrams.txt", 'wb') as f:
+    #     for note, length in zip(gennotes, genoffsets):
+    #         f.write("%s,%s\n" % (note, length))

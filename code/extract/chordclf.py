@@ -8,16 +8,11 @@ from sklearn.cross_validation import train_test_split
 from sklearn import metrics
 from sklearn.cluster import KMeans
 from collections import Counter, defaultdict
-from mingus.midi import fluidsynth
-from mingus.containers import NoteContainer
-from mingus.containers.Bar import Bar
-import mingus.core.value as value
 import pandas as pd
 import numpy as np
 import sys, re, itertools, random, cPickle
 import scipy.sparse
 sys.path.append('C:/Python27/Lib/site-packages')
-fluidsynth.init('/usr/share/sounds/sf2/FluidR3_GM.sf2',"alsa")
 
 # Custom modules.
 from chordclf_music import *
