@@ -59,15 +59,14 @@ chordlens = [i.quarterLength for i in allChords]
     where b is shared between both.
 
     notesNgram = a list of the ngrams (w/duplicates)
-    notesNgramProbs = dictionary of unique n-gram, probabilities """
+    notesNgramProbs = dictionary of unique n-gram, probabilities.
+    
+    Do unigrams, bigrams, trigrams. """
 
-## Unigram notes and probabilities.
+# Note: if you don't feel like coding, stick with it for just 5 minutes.
 
-## Bigram notes and probabilities.
-notesBigram = genNGrams(notes, 2)
-# notesBigramProbs = genNGramProbs(notesBigram)
+### The Bigram case. ###
+### Goal: create dictionary where key = (n-gram, length), value = n-gram probability. ###
 
-## Trigram notes and probbilities.
-notesTrigram = genNGrams(notes, 3)
-# notesTrigramProbs = genNGramProbs(notesTrigram)
-
+condProbs = ngramProbs(notes, notelens)
+# terms_n, terms_nless, fdict_n, fdict_nless, terms_ncond = ngramProbs(notes, notelens)
