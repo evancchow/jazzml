@@ -68,5 +68,5 @@ chordlens = [i.quarterLength for i in allChords]
 ### The Bigram case. ###
 ### Goal: create dictionary where key = (n-gram, length), value = n-gram probability. ###
 
-condProbs = ngramProbs(notes, notelens)
+ngramProbs(notes, notelens)
 # terms_n, terms_nless, fdict_n, fdict_nless, terms_ncond = ngramProbs(notes, notelens)

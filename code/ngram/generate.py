@@ -6,6 +6,7 @@ import sys
 
 from nltk import bigrams, trigrams, FreqDist
 from nltk.collocations import *
+from nltk.probability import ConditionalFreqDist, ConditionalProbDist, ELEProbDist
 
 # My imports
 sys.path.append('./code/extract/')
@@ -78,37 +79,8 @@ def ngramProbs(notes, notelens, n=2):
         Remember: P(w_a, w_b) = f(w_b, w_a) / f(w_b) """
     ### Goal: create dictionary where key = (n-gram, length(s) ), value = probability. ###
 
-    # All the bigram terms f((w1, L1), (w2, L2)), the numerator
-    terms_n = bindNotesLens(genNGrams(notes, n), genNGrams(notelens, n))
-    fdict_n = genSimpleFreqs(terms_n) # f((w1 L1), (w2 L2))
+    terms = ' '.join("%s,%.2f" % (n, l) for n, l in zip(notes, notelens))
+    bgs = bigrams(terms.split())
+    cfdist = ConditionalFreqDist((b[0], b[1]) for b in bgs)
 
-    # All the (n-1)gram terms f(w1, L1), the denominator
-    terms_nless = bindNotesLens(genNGrams(notes, n-1), genNGrams(notelens, n-1))
-    fdict_nless = genSimpleFreqs(terms_nless) # f((w1 L1))
-
-    # All the conditional bigram terms ((w_i+1 L-i+1, w_i L_i)) # move last item to front
-    terms_ncond = map(reverseTuple, terms_n)
-
-    # Build the conditional probability dictionary.
-    condProbs = defaultdict()
-    for term in terms_ncond:
-        queryNumerator = unreverseTuple(term) 
-        queryDenominator = queryNumerator[::-1]
-        if len(queryDenominator) == 1:
-            queryDenominator = queryDenominator[0]
-        condProbs[term] = fdict_n[queryNumerator] / fdict_nless[queryDenominator]
-
-    return condProbs
-
-
-    # Build the conditional probability dictionary.
-    # condProbs = defaultdict()
-    # for ngramTuple in terms_ncond.items():
-    #     next = ngramTuple[0]
-    #     given = ngramTuple[1]
-        # flatten into tuple
-
-        # condProbs[ngramTuple]
-
-    # terms_nless = 1
-    # return terms_n, terms_nless, fdict_n, fdict_nless, terms_ncond
+    ## TODO: test how to get probabilities on the smaller dataset (cfd.py)
