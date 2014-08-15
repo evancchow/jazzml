@@ -23,7 +23,7 @@ sys.path.append('./code/ngram')
 from parseraw import parseRawFile
 from generate import *
 
-""" Part 1: Parse the MIDI data, and get the chords/notes into text files. """
+""" Extract raw notes, notes length and raw chords, chord lengths """
 
 # ## Parse the MIDI data.
 # ## Note that the filenames can be relative to this script.
@@ -43,30 +43,16 @@ chords = [' '.join(s for s in str(i.sortDiatonicAscending(inPlace=True))
          for i in allChords]
 chordlens = [i.quarterLength for i in allChords]
 
-
-""" Generate the N-grams for the notes and chords. 
-    Also generate the probabilities for the n-grams. 
-
-    For each n-gram (n=[2, 3]) entry, create probability
-    relative to that n-gram total. For example, if there are
-    a total of 50 n-grams (w/duplicates) and [i, am] appears twice,
-    then the probability for that is 2/50. 
-
-    Then for the actual note generation, you'll pick either unigrams,
-    bigrams, or trigrams with weighted probabilites (should chain them
-    together for longer passages of notes - for example, bigram
-    with elements [a, b] should lead into bigram with elements [b, c]
-    where b is shared between both.
-
-    notesNgram = a list of the ngrams (w/duplicates)
-    notesNgramProbs = dictionary of unique n-gram, probabilities.
-    
-    Do unigrams, bigrams, trigrams. """
+""" Create the full notes, full chords. Also, create ConditionalProbDist
+    object to generate new notes (as a dict kind of format). """
 
 # Note: if you don't feel like coding, stick with it for just 5 minutes.
 
-### The Bigram case. ###
-### Goal: create dictionary where key = (n-gram, length), value = n-gram probability. ###
+# The full terms, e.g. "B-3,0.25" in format "note,duration".
+fullnotes = bindNotesLens(notes, notelens)
 
-ngramProbs(notes, notelens)
-# terms_n, terms_nless, fdict_n, fdict_nless, terms_ncond = ngramProbs(notes, notelens)
+# The generator for new notes/terms.
+noteGenerator = noteGenerator(notes, notelens)
+
+""" Build the chord changes. """
+
