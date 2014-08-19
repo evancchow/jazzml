@@ -1,0 +1,3 @@
+Move data into "demos" subfolder later so you can easily run a variety of jazz improvisation demos.
+
+note: Stream.splitByClass() looks really useful for separating notes by threshold (e.g. above/below keyboard key).
