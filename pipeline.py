@@ -43,34 +43,36 @@ melodyStream = metheny[5]
 melody1, melody2 = melodyStream.getElementsByClass(stream.Voice)
 for j in melody2:
     melody1.insert(j.offset, j)
+melodyVoice = melody1
 
-fullMelody = stream.Part() # Stream for the melody
-fullMelody.append(instrument.ElectricGuitar())
-fullMelody.append(key.KeySignature(sharps=1, mode='major'))
-fullMelody.append(meter.TimeSignature())
-fullMelody.append(melody1)
-melodyVoice = fullMelody.getElementsByClass(stream.Voice)[0]
+# FOR REFERENCE
+# fullMelody.append(key.KeySignature(sharps=1, mode='major'))
 
-# # TODO later; figure out how to get bass drum to play on midi.
-# # At worst, you have two options: 1) remove the offending track
-# # 2) find another way to encode the track (e.g. MIDI module)
+# Bad notes: melodyVoice[370, 391]
+# the two B-4, B-3 around melodyVoice[362]. I think: #362, #379
+# REMEMBER: after delete each of these, 
+# badIndices = [370, 391, 362, 379]
+# BETTER FIX: iterate through, if length = 0, then bump it up to 0.125
+# since I think this is giving the bug.
+for i in melodyVoice:
+    if i.quarterLength == 0.0:
+        i.quarterLength = 0.25
 
-# # Remove melody to make original data the accompaniment.
-compStream = metheny
-compStream.remove(melodyStream)
+# Change key signature to adhere to compStream (1 sharp, mode = major).
+# Also add Electric Guitar.
+melodyVoice.insert(0, instrument.ElectricGuitar())
+melodyVoice.insert(0, key.KeySignature(sharps=1, mode='major'))
 
-""" Generate abstract melodies for each measure. """
+# The accompaniment parts. Take only the best subset of parts from
+# the original data. Maybe add more parts, hand-add valid instruments.
+# Should add least add a string part (for sparse solos).
+# Verified are good parts: 0, 1, 6
+partIndices = [0, 1, 6]
+compStream = stream.Voice()
+compStream.append([j for i, j in enumerate(metheny) if i in partIndices])
 
-# Test your algorithm first.
-# Get first few bars of melody. Not sure of good way to subset the
-# fullMelody Stream.
-test = stream.Part()
-# test = melodyVoice[0:20]
-test.append(instrument.ElectricGuitar())
-test.append(meter.TimeSignature())
-test.append(key.KeySignature(sharps=1, mode='major'))
-test.append(melodyVoice[20:30])
+# Full stream containing both the melody and the accompaniment.
+fullStream = copy.deepcopy(compStream)
+fullStream.append(copy.deepcopy(melodyVoice))
 
-testMelody = melodyVoice[20:30]
-
-# grammar(testMelody)
+# Experiment to find solo section. Maybe starts either around 320 or 343?
