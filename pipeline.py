@@ -29,6 +29,7 @@ import pygame, copy, sys
 sys.path.append("./extract")
 sys.path.append("./grammar")
 from grammar import grammar
+from findSolo import findSolo
 
 """ Parse the MIDI data for separate melody and accompaniment parts. """
 
@@ -66,13 +67,38 @@ melodyVoice.insert(0, key.KeySignature(sharps=1, mode='major'))
 # The accompaniment parts. Take only the best subset of parts from
 # the original data. Maybe add more parts, hand-add valid instruments.
 # Should add least add a string part (for sparse solos).
-# Verified are good parts: 0, 1, 6
-partIndices = [0, 1, 6]
+# Verified are good parts: 0, 1, 6, 7
+partIndices = [0, 1, 6, 7] # TODO: remove 0.0==inf duration bug in part 7
 compStream = stream.Voice()
-compStream.append([j for i, j in enumerate(metheny) if i in partIndices])
+compStream.append([j.flat for i, j in enumerate(metheny) if i in partIndices])
 
 # Full stream containing both the melody and the accompaniment.
-fullStream = copy.deepcopy(compStream)
-fullStream.append(copy.deepcopy(melodyVoice))
+# All parts are flattened.
+fullStream = stream.Voice()
+for i in xrange(len(compStream)):
+    fullStream.append(compStream[i])
+fullStream.append(melodyVoice)
 
-# Experiment to find solo section. Maybe starts either around 320 or 343?
+# Extract solo stream, assuming you know the positions ..ByOffset(i, j).
+# Note that for different instruments (with stream.flat), you NEED to use
+# stream.Part(), not stream.Voice().
+# Accompanied solo is in range [478, 548)
+soloStream = stream.Voice()
+for part in fullStream:
+    newPart = stream.Part()
+    newPart.append(part.getElementsByClass(instrument.Instrument))
+    newPart.append(part.getElementsByClass(tempo.MetronomeMark))
+    newPart.append(part.getElementsByClass(key.KeySignature))
+    newPart.append(part.getElementsByClass(meter.TimeSignature))
+    newPart.append(part.getElementsByOffset(478, 548, includeEndBoundary=True))
+    np = newPart.flat
+    soloStream.insert(np)
+
+# THE LAST PART is the solo, i.e. the melody.
+# Start with just the part where the accompaniment comes back in. If time
+# you can do the (almost) pure guitar solo part, i.e. no accompaniment.
+
+### TODO: make sure rhythm starts on the beat (I think the solo in 
+    # soloStream[-1] might start a beat too late. But maybe it doesn't 
+    # matter if you're going to take every 4 anyway - as long as it plays
+    # okay!). Then start working on the algorithm, measure by measure.
