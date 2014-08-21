@@ -135,12 +135,12 @@ m1 = stream.Voice()
 # for i in allMeasures[0]:
 #     m1.append(i)
 for i in allMeasures[1]:
-    m1.insert(i.offset, i) # insert so consistent with original data
+    m1.insert(i.offset, i) # insert so consistent offsets with original data
 
 # TEST: Get chords for current measure.
 c1 = stream.Voice()
 for i in allMeasures_chords[1]:
-    c1.insert(i.offset, i) # insert so consistent with original data
+    c1.insert(i.offset, i) # insert so consistent offsets with original data
 
 for ix, nr in enumerate(m1):
     """ Iterate over the notes and rests in m1, finding the grammar and
@@ -157,9 +157,28 @@ for ix, nr in enumerate(m1):
     # Next, get type of note, e.g. R for Rest, C for Chord, etc.
     # Dealing with solo notes here. If happen to run into chord by accident,
     # call it "C".
-    elementType = None
+    elementType = ' '
+    lastChord = [n for n in c1 if n.offset <= nr.offset][-1]
+
+    """ Watch out for control flow: rearrange later so flows well. """
+    # R: First, check if it's a rest. Clearly a rest --> only one possibility.
     if isinstance(nr, note.Rest):
         elementType = 'R'
+    # C: Next, check to see if note pitch is in the last chord.
+    elif nr.name in lastChord.pitchNames:
+        elementType = 'C'
+    # L: Check if it's a complementary tone with the last chord.
+
+    # S: Check if it's a scale tone.
+
+    # A: Check if it's an approach tone.
+
+    # X: Otherwise, it's an arbitrary tone.
+
+
+    print "%s | %s" % (elementType, ppf(nr))
+    
+
     # elif isinstance(nr, )
-        """ If is instance of a chord note. Requires: find chord and notes.
-            Check the chordStream's measure 1 to find chord. """
+    """ If is instance of a chord note. Requires: find chord and notes.
+        Check the chordStream's measure 1 to find chord. """
