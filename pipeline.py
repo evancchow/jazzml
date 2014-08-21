@@ -168,6 +168,10 @@ for ix, nr in enumerate(m1):
     elif nr.name in lastChord.pitchNames:
         elementType = 'C'
     # L: Check if it's a complement tone (sonorous with the last chord).
+        ## TODO: look into complementary notes for different chords
+        ## (http://music.stackexchange.com/questions/8315/chords-to-fit-notes)
+        ## i.e. "available tensions" and hardcode those. Look into other ways
+        ## to detect whether a note is a complement tone.
 
     # S: Check if it's a scale tone.
 
