@@ -19,10 +19,12 @@
 # Defines
 head = lambda x: x[0:5] # from R
 tail = lambda x: x[:-6:-1] # from R
+ppf = lambda n: "%.3f   %s" % (n.offset, n)
 
 # Imports
 from music21 import *
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
+from itertools import groupby, izip_longest
 import pygame, copy, sys
 
 # My imports
@@ -90,15 +92,74 @@ for part in fullStream:
     newPart.append(part.getElementsByClass(tempo.MetronomeMark))
     newPart.append(part.getElementsByClass(key.KeySignature))
     newPart.append(part.getElementsByClass(meter.TimeSignature))
-    newPart.append(part.getElementsByOffset(478, 548, includeEndBoundary=True))
+    newPart.append(part.getElementsByOffset(476, 548, includeEndBoundary=True))
     np = newPart.flat
     soloStream.insert(np)
 
-# THE LAST PART is the solo, i.e. the melody.
-# Start with just the part where the accompaniment comes back in. If time
-# you can do the (almost) pure guitar solo part, i.e. no accompaniment.
+# MELODY: Group by measure so you can classify. 
+# Note that measure 0 is for the time signature, metronome, etc. which have
+# an offset of 0.0.
+melody = soloStream[-1]
+allMeasures = OrderedDict()
+offsetTuples = [(int(n.offset / 4), n) for n in melody]
+measureNum = 0 # for now, don't use real m. nums (119, 120)
+for key, group in groupby(offsetTuples, lambda x: x[0]):
+    allMeasures[measureNum] = [n[1] for n in group]
+    measureNum += 1
 
-### TODO: make sure rhythm starts on the beat (I think the solo in 
-    # soloStream[-1] might start a beat too late. But maybe it doesn't 
-    # matter if you're going to take every 4 anyway - as long as it plays
-    # okay!). Then start working on the algorithm, measure by measure.
+""" Just play the chord accompaniment with the melody. Refine later. """
+""" Think I successfully extracted just the chords in chordStream(). """
+# Generate the chord structure. Use just track 1 (piano) since it is
+# the only instrument that has chords. Later, if you have time, you can
+# mod this so it works with any MIDI file.
+# Group into 4s, just like before.
+chordStream = soloStream[0]
+chordStream.removeByClass(note.Rest)
+chordStream.removeByClass(note.Note)
+allMeasures_chords = OrderedDict()
+offsetTuples_chords = [(int(n.offset / 4), n) for n in chordStream]
+measureNum = 0
+for key, group in groupby(offsetTuples_chords, lambda x: x[0]):
+    allMeasures_chords[measureNum] = [n[1] for n in group]
+    measureNum += 1
+
+
+""" Create test measure. Won't work immediately for playback because just a
+    list of notes (and no metronome mark indicated). """
+# TEST: generate the grammar for the first measure. Need to reconvert it
+# into a stream since allMeasures stores LISTS of notes and not the
+# actual voices themselves.
+# For now, though, leave out append instrument, key signature, etc.
+# OUTPUT: create a "cluster" for this test measure.
+m1 = stream.Voice()
+# for i in allMeasures[0]:
+#     m1.append(i)
+for i in allMeasures[1]:
+    m1.insert(i.offset, i) # insert so consistent with original data
+
+# TEST: Get chords for current measure.
+c1 = stream.Voice()
+for i in allMeasures_chords[1]:
+    c1.insert(i.offset, i) # insert so consistent with original data
+
+for ix, nr in enumerate(m1):
+    """ Iterate over the notes and rests in m1, finding the grammar and
+        writing it to a string. """
+
+    # First, get the length for each element. e.g. 8th note = R8, but
+    # to simplify things you'll use the direct num, e.g. R,0.125
+    if (ix == (len(m1)-1)):
+        # the gap between current note and next note
+        diff = 4.0 - nr.offset
+    else:
+        diff = m1[ix + 1].offset - nr.offset
+
+    # Next, get type of note, e.g. R for Rest, C for Chord, etc.
+    # Dealing with solo notes here. If happen to run into chord by accident,
+    # call it "C".
+    elementType = None
+    if isinstance(nr, note.Rest):
+        elementType = 'R'
+    # elif isinstance(nr, )
+        """ If is instance of a chord note. Requires: find chord and notes.
+            Check the chordStream's measure 1 to find chord. """
