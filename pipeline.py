@@ -167,7 +167,7 @@ for ix, nr in enumerate(m1):
     # C: Next, check to see if note pitch is in the last chord.
     elif nr.name in lastChord.pitchNames:
         elementType = 'C'
-    # L: Check if it's a complementary tone with the last chord.
+    # L: Check if it's a complement tone (sonorous with the last chord).
 
     # S: Check if it's a scale tone.
 
