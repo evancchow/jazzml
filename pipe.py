@@ -19,7 +19,8 @@
 # Defines
 head = lambda x: x[0:5] # from R
 tail = lambda x: x[:-6:-1] # from R
-ppf = lambda n: "%.3f   %s" % (n.offset, n)
+ppf = lambda n: "%.3f   %s" % (n.offset, n) # pretty print note + offset
+trc = lambda s: "%s ..." % (s[0:10]) # pretty print first few chars of str
 
 # Imports
 from music21 import *
@@ -99,9 +100,9 @@ for part in fullStream:
 # MELODY: Group by measure so you can classify. 
 # Note that measure 0 is for the time signature, metronome, etc. which have
 # an offset of 0.0.
-melody = soloStream[-1]
+melodyStream = soloStream[-1]
 allMeasures = OrderedDict()
-offsetTuples = [(int(n.offset / 4), n) for n in melody]
+offsetTuples = [(int(n.offset / 4), n) for n in melodyStream]
 measureNum = 0 # for now, don't use real m. nums (119, 120)
 for key, group in groupby(offsetTuples, lambda x: x[0]):
     allMeasures[measureNum] = [n[1] for n in group]
@@ -127,44 +128,74 @@ for key, group in groupby(offsetTuples_chords, lambda x: x[0]):
     allMeasures_chords[measureNum] = [n[1] for n in group]
     measureNum += 1
 
-# Make an alternative version of the chord stream where all the chords are
-# lined up perfectly, i.e. models the real chord structure perfectly.
-# Take the first two chords and align them on beats 1 and 3.
-# TODO: could be more sophistcated for which chords you choose.
-allMeasures_chordStructure = OrderedDict()
-for ix, (key, group) in enumerate(groupby(offsetTuples_chords, lambda x: x[0])):
-    if ix == 0:
-        continue
-    print list(group)
-    chord1, chord2 = [n[1] for n in list(group)[0:2]]
-    # Change the offsets: 1 at start of measure, 2 at end of measure.
-    chord1.offset = chord1.offset - (chord1.offset % 4)
-    chord2.offset = chord2.offset - (chord2.offset % 4) + 2.0
-    allMeasures_chordStructure[ix] = [chord1, chord2]
+# Fix for the below problem.
+# 1) Find out why len(allMeasures) != len(allMeasures_chords).
+#   ANSWER: resolves at end but melody ends 1/16 before last measure so doesn't
+#           actually show up, while the accompaniment's beat 1 right after does.
+#           Actually on second thought: melody/comp start on Ab, and resolve to
+#           the same key (Ab) so could actually just cut out last measure to loop.
+#           Decided: just cut out the last measure.
+del allMeasures_chords[len(allMeasures_chords) - 1]
 
-""" All full processing done, so from now one, work with individual measures. """
+assert len(allMeasures_chords) == len(allMeasures)
 
-""" Create test measure. Won't work immediately for playback because just a
-    list of notes (and no metronome mark indicated). """
-# Unit rest; generate grammar for measure #1. Need to reconvert it
-# into a stream since allMeasures stores LISTS of notes and not the
-# actual voices themselves.
-j = int(raw_input("Enter number: "))
-m = stream.Voice()
-for i in allMeasures[j]:
-    m.insert(i.offset, i) # insert so consistent offsets with original data
-
-# TEST: Get chords for current measure.
-c = stream.Voice()
-for i in allMeasures_chords[j]:
-    c.insert(i.offset, i) # insert so consistent offsets with original data
-
-fg = parseMelody(m, c)
-print fg
-""" Iterate over all measures, generating the grammar strings for each measure. """
+# Could make alternative version where everything lined up with beats 1 and 3.
 
 
-# also check why extra measure in allMeasures_chords.
-# 8, 11, 13, 15, 17
+""" Iterate over all measures, generating the grammar strings for each measure. You can do this in non-realtime - because you're just 
+    generating the list of clusters.
 
-# grammarClusters = [parseMelody(m, c) for m, c in zip(allMeasures, allMeasures_chords)]
+    Note: since you're just generating cluster patterns, grammarClusters
+    does not strictly HAVE to be the same length as the # of measures, 
+    although it would be nice. """
+
+grammarClusters = []
+for ix in xrange(1, len(allMeasures)):
+    m = stream.Voice()
+    for i in allMeasures[ix]:
+        m.insert(i.offset, i)
+    c = stream.Voice()
+    for j in allMeasures_chords[ix]:
+        c.insert(j.offset, j)
+    grammarClusters.append(parseMelody(m, c))
+
+""" 
+
+    Real-time generative mode. Now things get crazy! 
+    Given your fixed chord progressions (measures w/chords) and the
+    chord grammars: cycle through the chord progression one measure
+    at a time, for each one choosing a cluster based on N-Gram 
+    probabilities and subsequently generating notes accordingly. 
+    Test this on one measure first to make sure it works, and
+    write in the loop later. 
+
+    Coding tasks:
+    1) Something to generate N-Gram for the grammar clusters. 
+    2) Create a measure and generate a cluster for it. If no 
+        previous clusters for N-Gram probs, then use simple frequency.
+    3) Create a way to generate notes given (a) the measure's chords,
+        and (b) a generated cluster pattern.
+
+    In other words, in real-time:
+    1) take a measure and its chords
+    2) generate a cluster for it based on previous cluster(s)
+    3) generate notes for that measures for real time use.
+
+    Has to be for indeterminate number of measures so be sure to
+    do it on a per-measure basis.
+
+"""
+
+from nltk import bigrams, trigrams, FreqDist
+from nltk.collocations import *
+from nltk.probability import (ConditionalFreqDist, ConditionalProbDist,
+    MLEProbDist, ELEProbDist)
+
+# Create the N-Gram generator object (a ConditionalProbDist).
+grammarGrams = bigrams(grammarClusters)
+grammarFreqDist = ConditionalFreqDist(grammarGrams)
+grammarProbDist = ConditionalProbDist(grammarGrams)
+
+# TEST: given a measure and a cluster, generate notes for it in
+# another function in grammar.py.
+

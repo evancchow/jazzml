@@ -111,9 +111,14 @@ def parseMelody(fullMeasureNotes, fullMeasureChords):
     prevNote = None # Store previous note. Need for interval.
     numNonRests = 0 # Number of non-rest elements. Need for updating prevNote.
     for ix, nr in enumerate(measure):
-        # Get the last chord.
-        lastChord = [n for n in chords if n.offset <= nr.offset][-1]
-        
+        # Get the last chord. If no last chord, then (assuming chords is of length
+        # >0) shift first chord in chords to the beginning of the measure.
+        try: 
+            lastChord = [n for n in chords if n.offset <= nr.offset][-1]
+        except IndexError:
+            chords[0].offset = measureStartTime
+            lastChord = [n for n in chords if n.offset <= nr.offset][-1]
+
         # FIRST, get type of note, e.g. R for Rest, C for Chord, etc.
         # Dealing with solo notes here. If unexpected chord: still call 'C'.
         elementType = ' '
