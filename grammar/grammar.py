@@ -170,3 +170,9 @@ def parseMelody(fullMeasureNotes, fullMeasureChords):
         fullGrammar += (grammarTerm + " ")
 
     return fullGrammar.rstrip()
+
+
+def unparseGrammar(grammar, measureChords):
+    """ Given a grammar string and the measure chords, returns the generated
+        notes for that measure. """
+    print grammar, measureChords

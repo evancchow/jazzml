@@ -31,7 +31,7 @@ import pygame, copy, sys
 # My imports
 sys.path.append("./extract")
 sys.path.append("./grammar")
-from grammar import parseMelody
+from grammar import parseMelody, unparseGrammar
 from findSolo import findSolo
 
 """ Parse the MIDI data for separate melody and accompaniment parts. """
@@ -201,7 +201,12 @@ for ix, currGrammar in enumerate(abstractGrammars):
 # Cluster with KMeans, 3 clusters.
 kmeans = KMeans(n_clusters=3)
 kmeans.fit(features)
-clusterLabels = kmeans.labels_
+clusterLabels = list(kmeans.labels_)
+
+# Create the clusters as a dictionary for easy access.
+clusterDict = defaultdict(list)
+for label, grammar in zip(clusterLabels, abstractGrammars):
+    clusterDict[label].append(grammar)
 
 """ 
 
@@ -214,11 +219,10 @@ clusterLabels = kmeans.labels_
     write in the loop later. 
 
     Coding tasks:
-    1) Something to generate N-Gram for the grammar clusters. 
-    2) Create a measure and generate a cluster for it. If no 
-        previous clusters for N-Gram probs, then use simple frequency.
-    3) Create a way to generate notes given (a) the measure's chords,
-        and (b) a generated cluster pattern.
+    1) Create N-Gram generator for the labels.
+    2) Cycle through the measures.
+        For each measure, generate the next cluster label, & pick random grammar struct from clusterDict vals.
+        Then, generate notes for that grammar structure for the measure.
 
     In other words, in real-time:
     1) take a measure and its chords
@@ -234,12 +238,24 @@ from nltk import bigrams, trigrams, FreqDist
 from nltk.collocations import *
 from nltk.probability import (ConditionalFreqDist, ConditionalProbDist,
     MLEProbDist, ELEProbDist)
+import random
 
-# Create the N-Gram generator object (a ConditionalProbDist).
-grammarGrams = bigrams(abstractGrammars)
+# Create the N-Gram generator object for cluster labels. Will choose
+# randomly within each cluster.
+grammarGrams = bigrams(clusterLabels)
 grammarFreqDist = ConditionalFreqDist(grammarGrams)
-grammarProbDist = ConditionalProbDist(grammarGrams, MLEProbDist)
+grammarProbDist = ConditionalProbDist(grammarFreqDist, MLEProbDist)
 
-# TEST: given a measure and a cluster, generate notes for it in
-# another function in grammar.py.
+# One measure test: generate a label (based on last label of
+# the original dataset, since only one measure here), and create notes
+# for it. Test measure = 1st measure of training set.
+# In other words: measure #1 of next iteration of training set.
+lastLabel = clusterLabels[-1]
+m1_chords = stream.Voice()
+for i in allMeasures_chords[1]:
+    m1_chords.insert(i.offset, i)
+m1_label = grammarProbDist[lastLabel].generate()
+m1_grammar = random.choice(clusterDict[m1_label])
+
+# move to function later
 
