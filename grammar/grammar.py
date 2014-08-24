@@ -9,6 +9,7 @@
 from collections import OrderedDict, defaultdict
 from itertools import groupby
 from music21 import *
+import copy
 
 # Helper method.
 def isScaleTone(chord, note):
@@ -50,19 +51,51 @@ def isApproachTone(chord, note):
                 return True
     return False
 
-def grammar(measure, chords):
+def grammar(fullMeasureNotes, fullMeasureChords):
     """ Given the notes in a measure ('measure') and the chords in that measure
-        ('chords'), generate a list of abstract grammatical symbols to represent 
-        that measure. Described in GTK's "Learning Jazz Grammars" (2009). 
+        ('chords'), generate a list (cluster) of abstract grammatical symbols to 
+        represent that measure. Described in GTK's "Learning Jazz Grammars" (2009). 
 
         Inputs: 
-        1) "measure" : 
+        1) "measure" : a stream.Voice object where each element is a
+            note.Note or note.Rest object.
+
+                >>> m1
+                <music21.stream.Voice 328482572>
+                >>> m1[0]
+                <music21.note.Rest rest>
+                >>> m1[1]
+                <music21.note.Note C>
+
+            Can have instruments and other elements, removes them here.
+
+        2) "chords" : a stream.Voice object where each element is a chord.Chord.
+
+                >>> c1
+                <music21.stream.Voice 328497548>
+                >>> c1[0]
+                <music21.chord.Chord E-4 G4 C4 B-3 G#2>
+                >>> c1[1]
+                <music21.chord.Chord B-3 F4 D4 A3>
+
+            Can have instruments and other elements, removes them here. 
+
+        Outputs:
+        1) "fullGrammar" : a string that holds the abstract grammar for measure.
 
         Format: 
+        (Remember, these are DURATIONS not offsets!)
         "R,0.125" : a rest element of  (1/32) length, or 1/8 quarter note. 
         "C,0.125<M-2,m-6>" : chord note of (1/32) length, generated
                              anywhere from minor 6th down to major 2nd down.
-                             (interval <a,b> is not ordered). """
+                             (interval <a,b> is not ordered). 
+    """
+
+    # Remove extraneous elements.
+    measure = copy.deepcopy(fullMeasureNotes)
+    measure.removeByNotOfClass([note.Note, note.Rest])
+    chords = copy.deepcopy(fullMeasureChords)
+    chords.removeByNotOfClass([chord.Chord])
 
     # Information for the start of the measure.
     # 1) measureStartTime: the offset for measure's start, e.g. 476.0.
@@ -71,12 +104,12 @@ def grammar(measure, chords):
     measureStartOffset  = measure[0].offset - measureStartTime
 
     """ Iterate over the notes and rests in measure, finding the grammar for each
-        note in the measure and yielding an abstract grammatical string for it. """
+        note in the measure and adding an abstract grammatical string for it. """
 
+    fullGrammar = ""
     prevNote = None # Store previous note. Need for interval.
     numNonRests = 0 # Number of non-rest elements. Need for updating prevNote.
     for ix, nr in enumerate(measure):
-
         # FIRST, get type of note, e.g. R for Rest, C for Chord, etc.
         # Dealing with solo notes here. If unexpected chord: still call 'C'.
         elementType = ' '
@@ -92,7 +125,7 @@ def grammar(measure, chords):
         elif isScaleTone(lastChord, nr):
             elementType = 'S'
         # A: Check if it's an approach tone, i.e. +-1 halfstep chord tone.
-        elif isApproachTone(lastchord, nr):
+        elif isApproachTone(lastChord, nr):
             elementType = 'A'
         # X: Otherwise, it's an arbitrary tone. Generate random note.
         else:
@@ -120,10 +153,12 @@ def grammar(measure, chords):
                 noteDist = interval.Interval(noteStart=prevNote, noteEnd=nr)
                 noteDistUpper = interval.add([noteDist, "m3"])
                 noteDistLower = interval.subtract([noteDist, "m3"])
-                intervalInfo = "<%s,%s> " % (noteDistUpper.directedName, 
+                intervalInfo = "<%s,%s>" % (noteDistUpper.directedName, 
                     noteDistLower.directedName)
                 prevNote = nr
 
         # Return. Do lazy evaluation for real-time performance.
         grammarTerm = noteInfo + intervalInfo
-        yield grammarTerm
+        fullGrammar += (grammarTerm + " ")
+
+    return fullGrammar.rstrip()
