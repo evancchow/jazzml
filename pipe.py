@@ -145,11 +145,11 @@ assert len(allMeasures_chords) == len(allMeasures)
 """ Iterate over all measures, generating the grammar strings for each measure. You can do this in non-realtime - because you're just 
     generating the list of clusters.
 
-    Note: since you're just generating cluster patterns, grammarClusters
+    Note: since you're just generating cluster patterns, abstractGrammars
     does not strictly HAVE to be the same length as the # of measures, 
     although it would be nice. """
 
-grammarClusters = []
+abstractGrammars = []
 for ix in xrange(1, len(allMeasures)):
     m = stream.Voice()
     for i in allMeasures[ix]:
@@ -157,7 +157,17 @@ for ix in xrange(1, len(allMeasures)):
     c = stream.Voice()
     for j in allMeasures_chords[ix]:
         c.insert(j.offset, j)
-    grammarClusters.append(parseMelody(m, c))
+    abstractGrammars.append(parseMelody(m, c))
+
+""" TODO: take each of these measure-length abstract grammars and cluster
+    them into similar groups based on various features (not too many
+    since you don't have many observations - maybe 2-3 features at most).
+"""
+
+
+
+""" Do the below after finishing the clustering. Then run n-gram model
+    on the clusters, and choose randomly within each cluster. """
 
 """ 
 
@@ -192,7 +202,7 @@ from nltk.probability import (ConditionalFreqDist, ConditionalProbDist,
     MLEProbDist, ELEProbDist)
 
 # Create the N-Gram generator object (a ConditionalProbDist).
-grammarGrams = bigrams(grammarClusters)
+grammarGrams = bigrams(abstractGrammars)
 grammarFreqDist = ConditionalFreqDist(grammarGrams)
 grammarProbDist = ConditionalProbDist(grammarGrams)
 
