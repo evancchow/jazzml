@@ -176,25 +176,32 @@ for ix in xrange(1, len(allMeasures)):
 
 """
 
+from sklearn.cluster import KMeans
+import numpy as np
+
 # The coefficients for the different note types.
 coefDict = {'C' : 0.8, 'S' : 0.6, 'A' : 0.4,'X' : 0.2, 'R' : 0.1 }
 
-# Test case for one measure. Works just fine.
-testGrammar = abstractGrammars[0] # test mesure / test grammar
-numNotes = 0
-consonance = 0.0
-for i in testGrammar.split(' '):
-    terms = i.split(',')
-    # increment # of notes if it's a note
-    if terms[0] != 'R':
-        numNotes += 1
-    # cumulatively calculate consonance for the measures
-    consonance += coefDict[terms[0]] * float(terms[1])
+# Extract features for each measure.
+features = np.empty([len(abstractGrammars), 2])
+for ix, currGrammar in enumerate(abstractGrammars):
+    # Test case for one measure. Works just fine.
+    numNotes = 0
+    consonance = 0.0
+    for i in currGrammar.split(' '):
+        terms = i.split(',')
+        # increment # of notes if it's a note
+        if terms[0] != 'R':
+            numNotes += 1
+        # cumulatively calculate consonance for the measures
+        consonance += coefDict[terms[0]] * float(terms[1])
+    features[ix, 0] = numNotes
+    features[ix, 1] = consonance
 
-
-
-""" Do the below after finishing the clustering. Then run n-gram model
-    on the clusters, and choose randomly within each cluster. """
+# Cluster with KMeans, 3 clusters.
+kmeans = KMeans(n_clusters=3)
+kmeans.fit(features)
+clusterLabels = kmeans.labels_
 
 """ 
 
