@@ -142,103 +142,103 @@ c1 = stream.Voice()
 for i in allMeasures_chords[1]:
     c1.insert(i.offset, i) # insert so consistent offsets with original data
 
-def isScaleTone(chord, note):
-    """ Method: generate all scales that have the chord notes using 
-        scale.deriveAll(notelist). Check names ('B-') if note is in those. """
+# def isScaleTone(chord, note):
+#     """ Method: generate all scales that have the chord notes using 
+#         scale.deriveAll(notelist). Check names ('B-') if note is in those. """
 
-    # Derive major or minor scales (minor if 'other') based on the quality
-    # of the chord.
-    scaleType = scale.MinorScale()
-    if chord.quality == 'major':
-        scaleType = scale.MajorScale()
-    elif chord.quality == 'minor':
-        scaleType = scale.MinorScale()
-    elif chord.quality == 'augmented':
-        scaleType = scale.WholeToneScale()
-    # Can change later to deriveAll() for flexibility. If so then use list
-    # comprehension of form [x for a in b for x in a].
-    scales = scaleType.derive(chord) # use deriveAll() later for flexibility
-    allPitches = list(set([pitch for pitch in scales.getPitches()]))
-    allNoteNames = [i.name for i in allPitches] # octaves don't matter
+#     # Derive major or minor scales (minor if 'other') based on the quality
+#     # of the chord.
+#     scaleType = scale.MinorScale()
+#     if chord.quality == 'major':
+#         scaleType = scale.MajorScale()
+#     elif chord.quality == 'minor':
+#         scaleType = scale.MinorScale()
+#     elif chord.quality == 'augmented':
+#         scaleType = scale.WholeToneScale()
+#     # Can change later to deriveAll() for flexibility. If so then use list
+#     # comprehension of form [x for a in b for x in a].
+#     scales = scaleType.derive(chord) # use deriveAll() later for flexibility
+#     allPitches = list(set([pitch for pitch in scales.getPitches()]))
+#     allNoteNames = [i.name for i in allPitches] # octaves don't matter
 
-    # Get note name. Return true if in the list of note names.
-    noteName = note.name
-    return (noteName in allNoteNames)
+#     # Get note name. Return true if in the list of note names.
+#     noteName = note.name
+#     return (noteName in allNoteNames)
 
-def isApproachTone(chord, note):
-    """ Method: see if note is +-1 a chord tone. Comment: don't worry about
-        different octaves, since you'll work in the upper-lower bounds for 
-        the next notes anyway (delta 1 3 ...). """
+# def isApproachTone(chord, note):
+#     """ Method: see if note is +-1 a chord tone. Comment: don't worry about
+#         different octaves, since you'll work in the upper-lower bounds for 
+#         the next notes anyway (delta 1 3 ...). """
 
-    for chordPitch in chord.pitches:
-        stepUp = chordPitch.transpose(1)
-        stepDown = chordPitch.transpose(-1)
-        if (note.name == stepDown.name or 
-            note.name == stepDown.getEnharmonic().name or
-            note.name == stepUp.name or
-            note.name == stepUp.getEnharmonic().name):
-                return True
-    return False
+#     for chordPitch in chord.pitches:
+#         stepUp = chordPitch.transpose(1)
+#         stepDown = chordPitch.transpose(-1)
+#         if (note.name == stepDown.name or 
+#             note.name == stepDown.getEnharmonic().name or
+#             note.name == stepUp.name or
+#             note.name == stepUp.getEnharmonic().name):
+#                 return True
+#     return False
 
-# Information for the start measure.
-measureStartTime = m1[0].offset - (m1[0].offset % 4) # meas. start, i.e.476.0
-measureStartOffset  = m1[0].offset - measureStartTime # how long til note #1
+# # Information for the start measure.
+# measureStartTime = m1[0].offset - (m1[0].offset % 4) # meas. start, i.e.476.0
+# measureStartOffset  = m1[0].offset - measureStartTime # how long til note #1
 
-# Information for previous note.
-prevNote = None
-numNonRests = 0 # number of non-rest elements in the measure.
-for ix, nr in enumerate(m1):
-    """ Iterate over the notes and rests in m1, finding the grammar and
-        writing it to a string. """
+# # Information for previous note.
+# prevNote = None
+# numNonRests = 0 # number of non-rest elements in the measure.
+# for ix, nr in enumerate(m1):
+#     """ Iterate over the notes and rests in m1, finding the grammar and
+#         writing it to a string. """
 
-    # FIRST, get type of note, e.g. R for Rest, C for Chord, etc.
-    # Dealing with solo notes here. If unexpected chord: still call 'C'.
-    elementType = ' '
-    lastChord = [n for n in c1 if n.offset <= nr.offset][-1]
-    # R: First, check if it's a rest. Clearly a rest --> only one possibility.
-    if isinstance(nr, note.Rest):
-        elementType = 'R'
-    # C: Next, check to see if note pitch is in the last chord.
-    elif nr.name in lastChord.pitchNames or isinstance(nr, chord.Chord):
-        elementType = 'C'
-    # L: (Complement tone) Skip this for now.
-    # S: Check if it's a scale tone.
-    elif isScaleTone(lastChord, nr):
-        elementType = 'S'
-    # A: Check if it's an approach tone, i.e. +-1 halfstep chord tone.
-    elif isApproachTone(lastchord, nr):
-        elementType = 'A'
-    # X: Otherwise, it's an arbitrary tone. Generate random note.
-    else:
-        elementType = 'X'
+#     # FIRST, get type of note, e.g. R for Rest, C for Chord, etc.
+#     # Dealing with solo notes here. If unexpected chord: still call 'C'.
+#     elementType = ' '
+#     lastChord = [n for n in c1 if n.offset <= nr.offset][-1]
+#     # R: First, check if it's a rest. Clearly a rest --> only one possibility.
+#     if isinstance(nr, note.Rest):
+#         elementType = 'R'
+#     # C: Next, check to see if note pitch is in the last chord.
+#     elif nr.name in lastChord.pitchNames or isinstance(nr, chord.Chord):
+#         elementType = 'C'
+#     # L: (Complement tone) Skip this for now.
+#     # S: Check if it's a scale tone.
+#     elif isScaleTone(lastChord, nr):
+#         elementType = 'S'
+#     # A: Check if it's an approach tone, i.e. +-1 halfstep chord tone.
+#     elif isApproachTone(lastchord, nr):
+#         elementType = 'A'
+#     # X: Otherwise, it's an arbitrary tone. Generate random note.
+#     else:
+#         elementType = 'X'
 
-    # SECOND, get the length for each element. e.g. 8th note = R8, but
-    # to simplify things you'll use the direct num, e.g. R,0.125
-    if (ix == (len(m1)-1)):
-        # formula for a in "a - b": start of measure (e.g. 476) + 4
-        diff = measureStartTime + 4.0 - nr.offset
-    else:
-        diff = m1[ix + 1].offset - nr.offset
+#     # SECOND, get the length for each element. e.g. 8th note = R8, but
+#     # to simplify things you'll use the direct num, e.g. R,0.125
+#     if (ix == (len(m1)-1)):
+#         # formula for a in "a - b": start of measure (e.g. 476) + 4
+#         diff = measureStartTime + 4.0 - nr.offset
+#     else:
+#         diff = m1[ix + 1].offset - nr.offset
 
-    # Combine into the note info.
-    noteInfo = "%s,%.3f" % (elementType, diff)
+#     # Combine into the note info.
+#     noteInfo = "%s,%.3f" % (elementType, diff)
 
-    # THIRD, get the deltas (max range up, max range down) based on where
-    # the previous note was, +- minor 3. Skip rests (don't affect deltas).
-    intervalInfo = ""
-    if isinstance(nr, note.Note):
-        numNonRests += 1
-        if numNonRests == 1:
-            prevNote = nr
-        else:
-            noteDist = interval.Interval(noteStart=prevNote, noteEnd=nr)
-            noteDistUpper = interval.add([noteDist, "m3"])
-            noteDistLower = interval.subtract([noteDist, "m3"])
-            intervalInfo = "<%s,%s> " % (noteDistUpper.directedName, 
-                noteDistLower.directedName)
-            prevNote = nr
+#     # THIRD, get the deltas (max range up, max range down) based on where
+#     # the previous note was, +- minor 3. Skip rests (don't affect deltas).
+#     intervalInfo = ""
+#     if isinstance(nr, note.Note):
+#         numNonRests += 1
+#         if numNonRests == 1:
+#             prevNote = nr
+#         else:
+#             noteDist = interval.Interval(noteStart=prevNote, noteEnd=nr)
+#             noteDistUpper = interval.add([noteDist, "m3"])
+#             noteDistLower = interval.subtract([noteDist, "m3"])
+#             intervalInfo = "<%s,%s> " % (noteDistUpper.directedName, 
+#                 noteDistLower.directedName)
+#             prevNote = nr
 
-    # Return. Do lazy evaluation for real-time performance.
-    grammarTerm = noteInfo + intervalInfo
-    print grammarTerm
+#     # Return. Do lazy evaluation for real-time performance.
+#     grammarTerm = noteInfo + intervalInfo
+#     print grammarTerm
 
