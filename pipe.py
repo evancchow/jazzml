@@ -159,10 +159,37 @@ for ix in xrange(1, len(allMeasures)):
         c.insert(j.offset, j)
     abstractGrammars.append(parseMelody(m, c))
 
-""" TODO: take each of these measure-length abstract grammars and cluster
+""" 
+    
+    Take each of these measure-length abstract grammars and cluster
     them into similar groups based on various features (not too many
     since you don't have many observations - maybe 2-3 features at most).
+
+    Features:
+    1) Number of notes
+    2) Consonance: C = f(x) = a*x1 + b*x2 + ...
+        where [a, b, ...] are the coefficients for note type 
+        (e.g. 0.8 for chord note, 0.5 for approach note, etc.
+        including rests) and [x1, x2, ...] are the note lengths.
+
+    Aim for 3 clusters. Create feature matrix for clustering with K-Means.
+
 """
+
+# The coefficients for the different note types.
+coefDict = {'C' : 0.8, 'S' : 0.6, 'A' : 0.4,'X' : 0.2, 'R' : 0.1 }
+
+# Test case for one measure. Works just fine.
+testGrammar = abstractGrammars[0] # test mesure / test grammar
+numNotes = 0
+consonance = 0.0
+for i in testGrammar.split(' '):
+    terms = i.split(',')
+    # increment # of notes if it's a note
+    if terms[0] != 'R':
+        numNotes += 1
+    # cumulatively calculate consonance for the measures
+    consonance += coefDict[terms[0]] * float(terms[1])
 
 
 
@@ -204,7 +231,7 @@ from nltk.probability import (ConditionalFreqDist, ConditionalProbDist,
 # Create the N-Gram generator object (a ConditionalProbDist).
 grammarGrams = bigrams(abstractGrammars)
 grammarFreqDist = ConditionalFreqDist(grammarGrams)
-grammarProbDist = ConditionalProbDist(grammarGrams)
+grammarProbDist = ConditionalProbDist(grammarGrams, MLEProbDist)
 
 # TEST: given a measure and a cluster, generate notes for it in
 # another function in grammar.py.

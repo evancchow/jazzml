@@ -161,7 +161,7 @@ def parseMelody(fullMeasureNotes, fullMeasureChords):
                 noteDist = interval.Interval(noteStart=prevNote, noteEnd=nr)
                 noteDistUpper = interval.add([noteDist, "m3"])
                 noteDistLower = interval.subtract([noteDist, "m3"])
-                intervalInfo = "<%s,%s>" % (noteDistUpper.directedName, 
+                intervalInfo = ",<%s,%s>" % (noteDistUpper.directedName, 
                     noteDistLower.directedName)
                 prevNote = nr
 
