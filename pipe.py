@@ -142,47 +142,114 @@ c1 = stream.Voice()
 for i in allMeasures_chords[1]:
     c1.insert(i.offset, i) # insert so consistent offsets with original data
 
+def isScaleTone(chord, note):
+    """ Method: generate all scales that have the chord notes using 
+        scale.deriveAll(notelist). Check names ('B-') if note is in those. """
+
+    # Derive major or minor scales (minor if 'other') based on the quality
+    # of the chord.
+    scaleType = scale.MinorScale()
+    if chord.quality == 'major':
+        scaleType = scale.MajorScale()
+    elif chord.quality == 'minor':
+        scaleType = scale.MinorScale()
+    elif chord.quality == 'augmented':
+        scaleType = scale.WholeToneScale()
+    # Can change later to deriveAll() for flexibility. If so then use list
+    # comprehension of form [x for a in b for x in a].
+    scales = scaleType.derive(chord) # use deriveAll() later for flexibility
+    allPitches = list(set([pitch for pitch in scales.getPitches()]))
+    allNoteNames = [i.name for i in allPitches] # octaves don't matter
+
+    # Get note name. Return true if in the list of note names.
+    noteName = note.name
+    return (noteName in allNoteNames)
+
+def isApproachTone(chord, note):
+    """ Method: see if note is +-1 a chord tone. Comment: don't worry about
+        different octaves, since you'll work in the upper-lower bounds for 
+        the next notes anyway (delta 1 3 ...). """
+
+    for chordPitch in chord.pitches:
+        stepUp = chordPitch.transpose(1)
+        stepDown = chordPitch.transpose(-1)
+        if (note.name == stepDown.name or 
+            note.name == stepDown.getEnharmonic().name or
+            note.name == stepUp.name or
+            note.name == stepUp.getEnharmonic().name):
+                return True
+    return False
+
+# Information for the start measure.
+measureStartTime = m1[0].offset - (m1[0].offset % 4) # meas. start, i.e.476.0
+measureStartOffset  = m1[0].offset - measureStartTime # how long til note #1
+
+# Information for previous note.
+prevNote = None
+numNonRests = 0 # number of non-rest elements in the measure.
+totalGrammar = "" # the total grammatical string to represent the notes
 for ix, nr in enumerate(m1):
     """ Iterate over the notes and rests in m1, finding the grammar and
         writing it to a string. """
 
-    # First, get the length for each element. e.g. 8th note = R8, but
-    # to simplify things you'll use the direct num, e.g. R,0.125
-    if (ix == (len(m1)-1)):
-        # the gap between current note and next note
-        diff = 4.0 - nr.offset
-    else:
-        diff = m1[ix + 1].offset - nr.offset
-
-    # Next, get type of note, e.g. R for Rest, C for Chord, etc.
+    # FIRST, get type of note, e.g. R for Rest, C for Chord, etc.
     # Dealing with solo notes here. If happen to run into chord by accident,
     # call it "C".
     elementType = ' '
     lastChord = [n for n in c1 if n.offset <= nr.offset][-1]
-
-    """ Watch out for control flow: rearrange later so flows well. """
+    """ Watch out for control flow: rearrange later so flows well. 
+        Currently: if conditions in decreasing order of preference so 
+        results will be the top result when fulfill multiple conditions. """
     # R: First, check if it's a rest. Clearly a rest --> only one possibility.
     if isinstance(nr, note.Rest):
         elementType = 'R'
     # C: Next, check to see if note pitch is in the last chord.
     elif nr.name in lastChord.pitchNames:
         elementType = 'C'
-    # L: Check if it's a complement tone (sonorous with the last chord).
-        ## TODO: look into complementary notes for different chords
-        ## (http://music.stackexchange.com/questions/8315/chords-to-fit-notes)
-        ## i.e. "available tensions" and hardcode those. Look into other ways
-        ## to detect whether a note is a complement tone.
-
+    # L: (Complement tone) Skip this for now.
     # S: Check if it's a scale tone.
+    elif isScaleTone(lastChord, nr):
+        elementType = 'S'
+    # A: Check if it's an approach tone, i.e. +-1 halfstep chord tone.
+    elif isApproachTone(lastchord, nr):
+        elementType = 'A'
+    # X: Otherwise, it's an arbitrary tone. Signifies generate a note 
+    # randomly (within the interval constraints).
+    else:
+        elementType = 'X'
 
-    # A: Check if it's an approach tone.
+    # SECOND, get the length for each element. e.g. 8th note = R8, but
+    # to simplify things you'll use the direct num, e.g. R,0.125
+    if (ix == (len(m1)-1)):
+        # the gap between current note and next note
 
-    # X: Otherwise, it's an arbitrary tone.
+        # formula for a in "a - b": start of measure (e.g. 476) + 4l
+        diff = measureStartTime + 4.0 - nr.offset
+    else:
+        diff = m1[ix + 1].offset - nr.offset
 
 
-    print "%s | %s" % (elementType, ppf(nr))
-    
+    print "%s:: %s%.3f | %s" % (ix, elementType, diff, ppf(nr))
 
-    # elif isinstance(nr, )
-    """ If is instance of a chord note. Requires: find chord and notes.
-        Check the chordStream's measure 1 to find chord. """
+    # THIRD, get the deltas (max range up, max range down) based on where
+    # the previous note was. For example, [A6 B6] ---> (delta )
+    # For rests, just append them - make no difference where they are.
+
+    # Make sure prevNote is at least the first chord.
+    if isinstance(nr, note.Note):
+        numNonRests += 1
+        if numNonRests == 1:
+            prevNote = nr
+        else:
+            print prevNote.nameWithOctave, nr.nameWithOctave
+            noteDist = interval.Interval(noteStart=prevNote, noteEnd=nr)
+            noteDistUpper = interval.add([noteDist, "m3"])
+            noteDistLower = interval.subtract([noteDist, "m3"])
+            print "%s <%s, %s>" % (noteDist.directedName, 
+                noteDistUpper.directedName, noteDistLower.directedName)
+            prevNote = nr
+
+            # // TODO: to generate the range, add half steps ("m2") to 
+            # // the lower interval until it equals the higher one.
+
+    # print "%"
