@@ -187,24 +187,19 @@ measureStartOffset  = m1[0].offset - measureStartTime # how long til note #1
 # Information for previous note.
 prevNote = None
 numNonRests = 0 # number of non-rest elements in the measure.
-totalGrammar = "" # the total grammatical string to represent the notes
 for ix, nr in enumerate(m1):
     """ Iterate over the notes and rests in m1, finding the grammar and
         writing it to a string. """
 
     # FIRST, get type of note, e.g. R for Rest, C for Chord, etc.
-    # Dealing with solo notes here. If happen to run into chord by accident,
-    # call it "C".
+    # Dealing with solo notes here. If unexpected chord: still call 'C'.
     elementType = ' '
     lastChord = [n for n in c1 if n.offset <= nr.offset][-1]
-    """ Watch out for control flow: rearrange later so flows well. 
-        Currently: if conditions in decreasing order of preference so 
-        results will be the top result when fulfill multiple conditions. """
     # R: First, check if it's a rest. Clearly a rest --> only one possibility.
     if isinstance(nr, note.Rest):
         elementType = 'R'
     # C: Next, check to see if note pitch is in the last chord.
-    elif nr.name in lastChord.pitchNames:
+    elif nr.name in lastChord.pitchNames or isinstance(nr, chord.Chord):
         elementType = 'C'
     # L: (Complement tone) Skip this for now.
     # S: Check if it's a scale tone.
@@ -213,43 +208,37 @@ for ix, nr in enumerate(m1):
     # A: Check if it's an approach tone, i.e. +-1 halfstep chord tone.
     elif isApproachTone(lastchord, nr):
         elementType = 'A'
-    # X: Otherwise, it's an arbitrary tone. Signifies generate a note 
-    # randomly (within the interval constraints).
+    # X: Otherwise, it's an arbitrary tone. Generate random note.
     else:
         elementType = 'X'
 
     # SECOND, get the length for each element. e.g. 8th note = R8, but
     # to simplify things you'll use the direct num, e.g. R,0.125
     if (ix == (len(m1)-1)):
-        # the gap between current note and next note
-
-        # formula for a in "a - b": start of measure (e.g. 476) + 4l
+        # formula for a in "a - b": start of measure (e.g. 476) + 4
         diff = measureStartTime + 4.0 - nr.offset
     else:
         diff = m1[ix + 1].offset - nr.offset
 
-
-    print "%s:: %s%.3f | %s" % (ix, elementType, diff, ppf(nr))
+    # Combine into the note info.
+    noteInfo = "%s,%.3f" % (elementType, diff)
 
     # THIRD, get the deltas (max range up, max range down) based on where
-    # the previous note was. For example, [A6 B6] ---> (delta )
-    # For rests, just append them - make no difference where they are.
-
-    # Make sure prevNote is at least the first chord.
+    # the previous note was, +- minor 3. Skip rests (don't affect deltas).
+    intervalInfo = ""
     if isinstance(nr, note.Note):
         numNonRests += 1
         if numNonRests == 1:
             prevNote = nr
         else:
-            print prevNote.nameWithOctave, nr.nameWithOctave
             noteDist = interval.Interval(noteStart=prevNote, noteEnd=nr)
             noteDistUpper = interval.add([noteDist, "m3"])
             noteDistLower = interval.subtract([noteDist, "m3"])
-            print "%s <%s, %s>" % (noteDist.directedName, 
-                noteDistUpper.directedName, noteDistLower.directedName)
+            intervalInfo = "<%s,%s> " % (noteDistUpper.directedName, 
+                noteDistLower.directedName)
             prevNote = nr
 
-            # // TODO: to generate the range, add half steps ("m2") to 
-            # // the lower interval until it equals the higher one.
+    # Return. Do lazy evaluation for real-time performance.
+    grammarTerm = noteInfo + intervalInfo
+    print grammarTerm
 
-    # print "%"
