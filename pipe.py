@@ -30,7 +30,7 @@ import pygame, copy, sys
 # My imports
 sys.path.append("./extract")
 sys.path.append("./grammar")
-from grammar import grammar
+from grammar import parseMelody
 from findSolo import findSolo
 
 """ Parse the MIDI data for separate melody and accompaniment parts. """
@@ -109,19 +109,38 @@ for key, group in groupby(offsetTuples, lambda x: x[0]):
 
 """ Just play the chord accompaniment with the melody. Refine later. """
 """ Think I successfully extracted just the chords in chordStream(). """
+
+# Get the stream of chords.
+# offsetTuples_chords: group chords by measure number.
+chordStream = soloStream[0]
+chordStream.removeByClass(note.Rest)
+chordStream.removeByClass(note.Note)
+offsetTuples_chords = [(int(n.offset / 4), n) for n in chordStream]
+
 # Generate the chord structure. Use just track 1 (piano) since it is
 # the only instrument that has chords. Later, if you have time, you can
 # mod this so it works with any MIDI file.
 # Group into 4s, just like before.
-chordStream = soloStream[0]
-chordStream.removeByClass(note.Rest)
-chordStream.removeByClass(note.Note)
 allMeasures_chords = OrderedDict()
-offsetTuples_chords = [(int(n.offset / 4), n) for n in chordStream]
 measureNum = 0
 for key, group in groupby(offsetTuples_chords, lambda x: x[0]):
     allMeasures_chords[measureNum] = [n[1] for n in group]
     measureNum += 1
+
+# Make an alternative version of the chord stream where all the chords are
+# lined up perfectly, i.e. models the real chord structure perfectly.
+# Take the first two chords and align them on beats 1 and 3.
+# TODO: could be more sophistcated for which chords you choose.
+allMeasures_chordStructure = OrderedDict()
+for ix, (key, group) in enumerate(groupby(offsetTuples_chords, lambda x: x[0])):
+    if ix == 0:
+        continue
+    print list(group)
+    chord1, chord2 = [n[1] for n in list(group)[0:2]]
+    # Change the offsets: 1 at start of measure, 2 at end of measure.
+    chord1.offset = chord1.offset - (chord1.offset % 4)
+    chord2.offset = chord2.offset - (chord2.offset % 4) + 2.0
+    allMeasures_chordStructure[ix] = [chord1, chord2]
 
 """ All full processing done, so from now one, work with individual measures. """
 
@@ -130,26 +149,22 @@ for key, group in groupby(offsetTuples_chords, lambda x: x[0]):
 # Unit rest; generate grammar for measure #1. Need to reconvert it
 # into a stream since allMeasures stores LISTS of notes and not the
 # actual voices themselves.
-m1 = stream.Voice()
-for i in allMeasures[0]: # TODO: add condition to ignore instruments etc.
-    m1.append(i)
-for i in allMeasures[1]:
-    m1.insert(i.offset, i) # insert so consistent offsets with original data
+j = int(raw_input("Enter number: "))
+m = stream.Voice()
+for i in allMeasures[j]:
+    m.insert(i.offset, i) # insert so consistent offsets with original data
 
 # TEST: Get chords for current measure.
-c1 = stream.Voice()
-for i in allMeasures_chords[1]:
-    c1.insert(i.offset, i) # insert so consistent offsets with original data
+c = stream.Voice()
+for i in allMeasures_chords[j]:
+    c.insert(i.offset, i) # insert so consistent offsets with original data
 
-# Another unit test: measure 5.
-m5 = stream.Voice()
-for i in allMeasures[5]:
-    m5.insert(i.offset, i)
-c5 = stream.Voice()
-for i in allMeasures_chords[5]:
-    c5.insert(i.offset, i)
-
+fg = parseMelody(m, c)
+print fg
 """ Iterate over all measures, generating the grammar strings for each measure. """
 
 
+# also check why extra measure in allMeasures_chords.
+# 8, 11, 13, 15, 17
 
+# grammarClusters = [parseMelody(m, c) for m, c in zip(allMeasures, allMeasures_chords)]

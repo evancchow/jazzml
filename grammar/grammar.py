@@ -51,7 +51,8 @@ def isApproachTone(chord, note):
                 return True
     return False
 
-def grammar(fullMeasureNotes, fullMeasureChords):
+def parseMelody(fullMeasureNotes, fullMeasureChords):
+
     """ Given the notes in a measure ('measure') and the chords in that measure
         ('chords'), generate a list (cluster) of abstract grammatical symbols to 
         represent that measure. Described in GTK's "Learning Jazz Grammars" (2009). 
@@ -91,10 +92,10 @@ def grammar(fullMeasureNotes, fullMeasureChords):
                              (interval <a,b> is not ordered). 
     """
 
-    # Remove extraneous elements.
+    # Remove extraneous elements.x
     measure = copy.deepcopy(fullMeasureNotes)
-    measure.removeByNotOfClass([note.Note, note.Rest])
     chords = copy.deepcopy(fullMeasureChords)
+    measure.removeByNotOfClass([note.Note, note.Rest])
     chords.removeByNotOfClass([chord.Chord])
 
     # Information for the start of the measure.
@@ -110,10 +111,12 @@ def grammar(fullMeasureNotes, fullMeasureChords):
     prevNote = None # Store previous note. Need for interval.
     numNonRests = 0 # Number of non-rest elements. Need for updating prevNote.
     for ix, nr in enumerate(measure):
+        # Get the last chord.
+        lastChord = [n for n in chords if n.offset <= nr.offset][-1]
+        
         # FIRST, get type of note, e.g. R for Rest, C for Chord, etc.
         # Dealing with solo notes here. If unexpected chord: still call 'C'.
         elementType = ' '
-        lastChord = [n for n in chords if n.offset <= nr.offset][-1]
         # R: First, check if it's a rest. Clearly a rest --> only one possibility.
         if isinstance(nr, note.Rest):
             elementType = 'R'
