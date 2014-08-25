@@ -9,7 +9,7 @@
 from collections import OrderedDict, defaultdict
 from itertools import groupby
 from music21 import *
-import copy
+import copy, random
 
 # Helper method.
 def isScaleTone(chord, note):
@@ -34,6 +34,29 @@ def isScaleTone(chord, note):
     # Get note name. Return true if in the list of note names.
     noteName = note.name
     return (noteName in allNoteNames)
+
+
+# Helper method.
+def genScaleTone(chord):
+    """ Method: generate a scale note from a chord. """
+
+    # Derive major or minor scales (minor if 'other') based on the quality
+    # of the chord.
+    scaleType = scale.MinorScale()
+    if chord.quality == 'major':
+        scaleType = scale.MajorScale()
+    elif chord.quality == 'minor':
+        scaleType = scale.MinorScale()
+    elif chord.quality == 'augmented':
+        scaleType = scale.WholeToneScale()
+    # Can change later to deriveAll() for flexibility. If so then use list
+    # comprehension of form [x for a in b for x in a].
+    scales = scaleType.derive(chord) # use deriveAll() later for flexibility
+    allPitches = list(set([pitch for pitch in scales.getPitches()]))
+    allNoteNames = [i.name for i in allPitches] # octaves don't matter
+
+    # Return a note (no octave here) in a scale that matches the chord.
+    return random.choice(allNoteNames)
 
 # Helper method.
 def isApproachTone(chord, note):
@@ -166,7 +189,7 @@ def parseMelody(fullMeasureNotes, fullMeasureChords):
                 prevNote = nr
 
         # Return. Do lazy evaluation for real-time performance.
-        grammarTerm = noteInfo + intervalInfo
+        grammarTerm = noteInfo + intervalInfo 
         fullGrammar += (grammarTerm + " ")
 
     return fullGrammar.rstrip()

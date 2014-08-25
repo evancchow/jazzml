@@ -31,7 +31,8 @@ import pygame, copy, sys
 # My imports
 sys.path.append("./extract")
 sys.path.append("./grammar")
-from grammar import parseMelody, unparseGrammar
+# from grammar import parseMelody, unparseGrammar
+from grammar import *
 from findSolo import findSolo
 
 """ Parse the MIDI data for separate melody and accompaniment parts. """
@@ -246,6 +247,8 @@ grammarGrams = bigrams(clusterLabels)
 grammarFreqDist = ConditionalFreqDist(grammarGrams)
 grammarProbDist = ConditionalProbDist(grammarFreqDist, MLEProbDist)
 
+""" Note: the measure, chords and all, starts at 0.00. Alter if needed. """
+
 # One measure test: generate a label (based on last label of
 # the original dataset, since only one measure here), and create notes
 # for it. Test measure = 1st measure of training set.
@@ -253,9 +256,59 @@ grammarProbDist = ConditionalProbDist(grammarFreqDist, MLEProbDist)
 lastLabel = clusterLabels[-1]
 m1_chords = stream.Voice()
 for i in allMeasures_chords[1]:
-    m1_chords.insert(i.offset, i)
+    m1_chords.insert((i.offset % 4), i)
 m1_label = grammarProbDist[lastLabel].generate()
 m1_grammar = random.choice(clusterDict[m1_label])
 
 # move to function later
+m1_elements = stream.Voice()
+currOffset = 0.0 # for recalculate last chord.
+for grammarElement in m1_grammar.split(' ')[0:1]: # Test on first element.
+    terms = grammarElement.split(',')
+    currOffset += float(terms[1])
 
+    # Case 1: it's a rest. Just append
+    if terms[0] == 'R':
+        rNote = note.Rest(quarterLength = float(terms[1]))
+        m1_elements.insert(currOffset, rNote)
+        # TODO: insert rest at currOffset of length terms[1], then continue
+        # m1_elements.insert(currOffset, note.Rest())
+
+
+    # Get the last chord first so you can find chord note, scale note, etc.
+    try: 
+        lastChord = [n for n in m1_chords if n.offset <= currOffset][-1]
+    except IndexError:
+        m1_chords[0].offset = 0.0
+        lastChord = [n for n in m1_chords if n.offset <= currOffset][-1]
+
+    # Case: no < > (should just be the first note) so generate from range
+    # of lowest chord note to highest chord note (if not a chord note, else
+    # just generate one of the actual chord notes). 
+
+    # Case #1: if no < > to indicate next note range. Usually this lack of < >
+    # is for the first note (no precedent), or for rests.
+    if (len(terms) == 2): # Case 1: if no < >.
+
+        # Case C: chord note.
+        if terms[0] == 'C':
+            lastChordNotes = [p.nameWithOctave for p in lastChord.pitches]
+            cNote = note.Note(random.choice(lastChordNotes))
+            m1_elements.insert(currOffset, cNote)
+            print ("C Inserted!")
+
+        # Case S: scale note. Since no < > (probably beginning of measure),
+        # generate it within the range of the chord.
+        elif terms[0] == 'S':
+            sNoteName = genScaleTone(lastChord)
+            lastChordSort = lastChord.sortAscending()
+            sNoteOctave = random.choice(xrange(lastChordSort[0].octave, lastChordSort[1].octave))
+            sNote = note.Note(("%s%s" % (sNoteName, sNoteOctave)))
+            m1_elements.insert(currOffset, sNote)
+            print ("S Inserted!")
+
+    # Case #2: if < > for the increment. Usually for notes after the first one.
+    else:
+
+        # Case C: chord note, must be within increment (terms[2]).
+        if terms[0] == 'C':
