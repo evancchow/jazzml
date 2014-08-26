@@ -264,6 +264,12 @@ m1_grammar = random.choice(clusterDict[m1_label])
 m1_elements = stream.Voice()
 currOffset = 0.0 # for recalculate last chord.
 for grammarElement in m1_grammar.split(' ')[0:1]: # Test on first element.
+
+    # Alter stuff here for testing.
+    grammarElement = list(grammarElement)
+    grammarElement[0] = 'C' # for testing
+    grammarElement = ''.join(grammarElement)
+
     terms = grammarElement.split(',')
     currOffset += float(terms[1])
 
@@ -271,9 +277,6 @@ for grammarElement in m1_grammar.split(' ')[0:1]: # Test on first element.
     if terms[0] == 'R':
         rNote = note.Rest(quarterLength = float(terms[1]))
         m1_elements.insert(currOffset, rNote)
-        # TODO: insert rest at currOffset of length terms[1], then continue
-        # m1_elements.insert(currOffset, note.Rest())
-
 
     # Get the last chord first so you can find chord note, scale note, etc.
     try: 
@@ -292,23 +295,34 @@ for grammarElement in m1_grammar.split(' ')[0:1]: # Test on first element.
 
         # Case C: chord note.
         if terms[0] == 'C':
-            lastChordNotes = [p.nameWithOctave for p in lastChord.pitches]
-            cNote = note.Note(random.choice(lastChordNotes))
+            cNote = genChordTone(lastChord)
             m1_elements.insert(currOffset, cNote)
             print ("C Inserted!")
 
         # Case S: scale note. Since no < > (probably beginning of measure),
         # generate it within the range of the chord.
         elif terms[0] == 'S':
-            sNoteName = genScaleTone(lastChord)
-            lastChordSort = lastChord.sortAscending()
-            sNoteOctave = random.choice(xrange(lastChordSort[0].octave, lastChordSort[1].octave))
-            sNote = note.Note(("%s%s" % (sNoteName, sNoteOctave)))
+            # sNoteName = genScaleTone(lastChord)
+            # lastChordSort = lastChord.sortAscending()
+            # sNoteOctave = random.choice(xrange(lastChordSort[0].octave, lastChordSort[1].octave))
+            # sNote = note.Note(("%s%s" % (sNoteName, sNoteOctave)))
+            sNote = genScaleTone(lastChord)
             m1_elements.insert(currOffset, sNote)
             print ("S Inserted!")
+
+        # Case A: approach note.
+        elif terms[0] == 'A':
+            aNote = genApproachTone(lastChord)
+            m1_elements.insert(currOffset, aNote)
+            print ("A Inserted!")
+
+        # Case X: arbitrary tone.
+
+    # For testing: iterate over indices [0:2] instead of [0:1]
 
     # Case #2: if < > for the increment. Usually for notes after the first one.
     else:
 
         # Case C: chord note, must be within increment (terms[2]).
         if terms[0] == 'C':
+            pass

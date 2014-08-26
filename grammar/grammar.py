@@ -35,29 +35,6 @@ def isScaleTone(chord, note):
     noteName = note.name
     return (noteName in allNoteNames)
 
-
-# Helper method.
-def genScaleTone(chord):
-    """ Method: generate a scale note from a chord. """
-
-    # Derive major or minor scales (minor if 'other') based on the quality
-    # of the chord.
-    scaleType = scale.MinorScale()
-    if chord.quality == 'major':
-        scaleType = scale.MajorScale()
-    elif chord.quality == 'minor':
-        scaleType = scale.MinorScale()
-    elif chord.quality == 'augmented':
-        scaleType = scale.WholeToneScale()
-    # Can change later to deriveAll() for flexibility. If so then use list
-    # comprehension of form [x for a in b for x in a].
-    scales = scaleType.derive(chord) # use deriveAll() later for flexibility
-    allPitches = list(set([pitch for pitch in scales.getPitches()]))
-    allNoteNames = [i.name for i in allPitches] # octaves don't matter
-
-    # Return a note (no octave here) in a scale that matches the chord.
-    return random.choice(allNoteNames)
-
 # Helper method.
 def isApproachTone(chord, note):
     """ Method: see if note is +-1 a chord tone. Comment: don't worry about
@@ -73,6 +50,43 @@ def isApproachTone(chord, note):
             note.name == stepUp.getEnharmonic().name):
                 return True
     return False
+
+# Helper method.
+def genChordTone(lastChord):
+    lastChordNoteNames = [p.nameWithOctave for p in lastChord.pitches]
+    return note.Note(random.choice(lastChordNoteNames))
+
+# Helper method.
+def genScaleTone(lastChord):
+    """ Method: generate a scale note (note.Note()) from a lastChord. """
+
+    # Derive major or minor scales (minor if 'other') based on the quality
+    # of the lastChord.
+    scaleType = scale.MinorScale()
+    if lastChord.quality == 'major':
+        scaleType = scale.MajorScale()
+    elif lastChord.quality == 'minor':
+        scaleType = scale.MinorScale()
+    elif lastChord.quality == 'augmented':
+        scaleType = scale.WholeToneScale()
+    # Can change later to deriveAll() for flexibility. If so then use list
+    # comprehension of form [x for a in b for x in a].
+    scales = scaleType.derive(lastChord) # use deriveAll() later for flexibility
+    allPitches = list(set([pitch for pitch in scales.getPitches()]))
+    allNoteNames = [i.name for i in allPitches] # octaves don't matter
+
+    # Return a note (no octave here) in a scale that matches the lastChord.
+    sNoteName = random.choice(allNoteNames)
+    lastChordSort = lastChord.sortAscending()
+    sNoteOctave = random.choice(xrange(lastChordSort[0].octave, lastChordSort[1].octave))
+    sNote = note.Note(("%s%s" % (sNoteName, sNoteOctave)))
+    return sNote
+
+# Helper method.
+def genApproachTone(lastChord):
+    sNote = genScaleTone(lastChord)
+    aNote = sNote.transpose(random.choice([1, -1]))
+    return aNote
 
 def parseMelody(fullMeasureNotes, fullMeasureChords):
 
