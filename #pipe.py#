@@ -343,6 +343,7 @@ for ix, grammarElement in enumerate(m1_grammar.split(' ')):
         # the lower bound. Then iterate over, and find valid notes. Then
         # choose randomly from those.
         
+        try:
         if terms[0] == 'C':
             relevantChordTones = []
             print "Testing out the relevant chord tones ..."
