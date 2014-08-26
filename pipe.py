@@ -333,10 +333,9 @@ for ix, grammarElement in enumerate(m1_grammar.split(' ')):
             upperInterval, lowerInterval = interval1, interval2
         else:
             upperInterval, lowerInterval = interval2, interval1
-        lowerNote = interval.transposeNote(prevElement, lowerInterval)
-        upperNote = interval.transposeNote(prevElement, upperInterval)
-        numNotes = int(interval.notesToChromatic(lowerNote, upperNote)
-                       .cents / 100) + 2 # for safety
+        lowPitch = interval.transposePitch(prevElement.pitch, lowerInterval)
+        highPitch = interval.transposePitch(prevElement.pitch, upperInterval)
+        numNotes = int(highPitch.ps - lowPitch.ps + 2) # for range(s, e)
 
         # Case C: chord note, must be within increment (terms[2]).
         # First, transpose note with lowerInterval to get note that is
@@ -345,34 +344,38 @@ for ix, grammarElement in enumerate(m1_grammar.split(' ')):
         
         if terms[0] == 'C':
             relevantChordTones = []
-            print "Testing out the relevant chord tones ..."
             for i in xrange(1, numNotes):
-                currNote = lowerNote.transpose(i)
-                print "The current note: %s" % (currNote)
+                currNote = note.Note(lowPitch.transpose(i).simplifyEnharmonic())
                 if isChordTone(lastChord, currNote):
                     relevantChordTones.append(currNote)
-            print "The relevant chord tones: ", relevantChordTones
-            m1_elements.insert(currOffset, random.choice(relevantChordTones))
+            insertNote = random.choice(relevantChordTones)
+            insertNote.quarterLength = float(terms[1])
+            m1_elements.insert(currOffset, insertNote)
 
         # Case S:
         elif terms[0] == 'S':
             relevantScaleTones = []
             for i in xrange(1, numNotes):
-                currNote = lowerNote.transpose(i)
+                currNote = note.Note(lowPitch.transpose(i).simplifyEnharmonic())
                 if isScaleTone(lastChord, currNote):
                     relevantScaleTones.append(currNote)
-            m1_elements.insert(currOffset, random.choice(relevantScaleTones))
+            insertNote = random.choice(relevantScaleTones)
+            insertNote.quarterLength = float(terms[1])
+            m1_elements.insert(currOffset, insertNote)
                     
         # Case A: approach note, increment constraint as before.
         elif terms[0] == 'A':
             relevantApproachTones = []
             for i in xrange(1, numNotes):
-                currNote = lowerNote.transpose(i)
+                currNote = note.Note(lowPitch.transpose(i).simplifyEnharmonic())
                 if isApproachTone(lastChord, currNote):
                     relevantApproachTones.append(currNote)
-            m1_elements.insert(currOffset, random.choice(relevantApproachTones))
+            insertNote = random.choice(relevantApproachTones)
+            insertNote.quarterLength = float(terms[1])
+            m1_elements.insert(currOffset, insertNote)
         
         # Case X: Arbitrary tones, within increments of course.
         else:
-            randomTone = lowerNote.transpose(random.choice(xrange(1, numNotes)))
+            randomTone = note.Note(lowPitch.transpose(random.choice(xrange(1, numNotes))).simplifyEnharmonic())
+            randomTone.quarterLength = float(terms[1])
             m1_elements.insert(currOffset, randomTone)
