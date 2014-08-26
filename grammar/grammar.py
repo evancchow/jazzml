@@ -52,6 +52,10 @@ def isApproachTone(chord, note):
     return False
 
 # Helper method.
+def isChordTone(lastChord, note):
+    return (note.name in (p.name for p in lastChord.pitches))
+
+# Helper method.
 def genChordTone(lastChord):
     lastChordNoteNames = [p.nameWithOctave for p in lastChord.pitches]
     return note.Note(random.choice(lastChordNoteNames))

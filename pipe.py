@@ -265,7 +265,7 @@ m1_grammar = clusterDict[m1_label][0]
 m1_elements = stream.Voice()
 currOffset = 0.0 # for recalculate last chord.
 prevElement = None
-for ix, grammarElement in enumerate(m1_grammar.split(' ')[0:3]):
+for ix, grammarElement in enumerate(m1_grammar.split(' ')[0:4]):
 
     # Alter stuff here for testing.
     # grammarElement = list(grammarElement)
@@ -280,10 +280,6 @@ for ix, grammarElement in enumerate(m1_grammar.split(' ')[0:3]):
         rNote = note.Rest(quarterLength = float(terms[1]))
         m1_elements.insert(currOffset, rNote)
         continue
-
-    # Update the previous note for <> case.
-    if ix == 0:
-        prevElement = grammarElement
 
     # Get the last chord first so you can find chord note, scale note, etc.
     try: 
@@ -300,50 +296,64 @@ for ix, grammarElement in enumerate(m1_grammar.split(' ')[0:3]):
     # is for the first note (no precedent), or for rests.
     if (len(terms) == 2): # Case 1: if no < >.
 
+        insertNote = note.Note()
+
         # Case C: chord note.
         if terms[0] == 'C':
-            cNote = genChordTone(lastChord)
-            m1_elements.insert(currOffset, cNote)
-            print ("C Inserted!")
+            insertNote = genChordTone(lastChord)
 
         # Case S: scale note. Since no < > (probably beginning of measure),
         # generate it within the range of the chord.
         elif terms[0] == 'S':
-            sNote = genScaleTone(lastChord)
-            m1_elements.insert(currOffset, sNote)
-            print ("S Inserted!")
+            insertNote = genScaleTone(lastChord)
 
         # Case A: approach note.
         elif terms[0] == 'A':
-            aNote = genApproachTone(lastChord)
-            m1_elements.insert(currOffset, aNote)
-            print ("A Inserted!")
+            insertNote = genApproachTone(lastChord)
 
         # Case X: arbitrary tone.
         else:
-            xNote = genArbitraryTone(lastChord)
-            m1_elements.insert(currOffset, xNote)
-            print ("X Inserted!")
+            insertNote = genArbitraryTone(lastChord)
+
+        # Update the stream of generated notes
+        m1_elements.insert(currOffset, insertNote)
 
         # Update the last note/rest
-        prevElement = grammarElement
+        prevElement = insertNote
 
     # Case #2: if < > for the increment. Usually for notes after the first one.
     else:
+        # Get lower, upper intervals and notes.
+        interval1 = interval.Interval(terms[2].replace("<",''))
+        interval2 = interval.Interval(terms[3].replace(">",''))
+        if interval1.cents > interval2.cents:
+            upperInterval, lowerInterval = interval1, interval2
+        else: # interval.directedName
+            upperInterval, lowerInterval = interval2, interval1
+        lowerNote = interval.transposeNote(prevElement, lowerInterval)
+        upperNote = interval.transposeNote(prevElement, upperInterval)
 
         # Case C: chord note, must be within increment (terms[2]).
+        # First, transpose note with lowerInterval to get note that is
+        # the lower bound. Then iterate over, and find valid notes. Then
+        # choose randomly from those.
+        
         if terms[0] == 'C':
-            print grammarElement, prevElement
+            relevantChordTones = []
+            # while lowerNote != upperNote:
+            #     if isChordTone(lowerNote):
+            #         relevantChordTones.append(lowerNote)
+            #     lowerNote.transpose(1, inPlace=True)
+            # m1_elements.insert(currOffset, random.choice(relevantChordTones))
 
         # Case S:
-            
+            # do same thing here as for C, A cases
         # Case A: approach note, increment constraint as before.
         elif terms[0] == 'A':
-            print grammarElement, prevElement
-        
-
-
-
+            relevantApproachTones = []
+            # while lowerNote != upperNote:
+            #     if isApproachTone(lowerNote):
+            #         relevant
+            # print grammarElement, prevElement
 
         # Update the last note/rest
-        prevElement = grammarElement
