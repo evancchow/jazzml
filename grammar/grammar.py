@@ -268,6 +268,11 @@ def unparseGrammar(m1_grammar, m1_chords):
             else:
                 insertNote = genArbitraryTone(lastChord)
 
+            # FIX: if octave < 3, then change it to 3. (mostly to fix
+            # the first notes in a sequence)
+            if insertNote.octave < 4:
+                insertNote.octave = 4
+
             # Update the stream of generated notes
             m1_elements.insert(currOffset, insertNote)
 
