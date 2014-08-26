@@ -330,4 +330,4 @@ def unparseGrammar(m1_grammar, m1_chords):
                 randomTone.quarterLength = float(terms[1])
                 m1_elements.insert(currOffset, randomTone)
 
-        return m1_elements
+    return m1_elements
