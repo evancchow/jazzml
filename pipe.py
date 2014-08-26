@@ -258,17 +258,19 @@ m1_chords = stream.Voice()
 for i in allMeasures_chords[1]:
     m1_chords.insert((i.offset % 4), i)
 m1_label = grammarProbDist[lastLabel].generate()
-m1_grammar = random.choice(clusterDict[m1_label])
+# m1_grammar = random.choice(clusterDict[m1_label])
+m1_grammar = clusterDict[m1_label][0]
 
 # move to function later
 m1_elements = stream.Voice()
 currOffset = 0.0 # for recalculate last chord.
-for grammarElement in m1_grammar.split(' ')[0:1]: # Test on first element.
+prevElement = None
+for ix, grammarElement in enumerate(m1_grammar.split(' ')[0:3]):
 
     # Alter stuff here for testing.
-    grammarElement = list(grammarElement)
-    grammarElement[0] = 'X' # for testing
-    grammarElement = ''.join(grammarElement)
+    # grammarElement = list(grammarElement)
+    # grammarElement[0] = 'X' # for testing
+    # grammarElement = ''.join(grammarElement)
 
     terms = grammarElement.split(',')
     currOffset += float(terms[1])
@@ -277,6 +279,11 @@ for grammarElement in m1_grammar.split(' ')[0:1]: # Test on first element.
     if terms[0] == 'R':
         rNote = note.Rest(quarterLength = float(terms[1]))
         m1_elements.insert(currOffset, rNote)
+        continue
+
+    # Update the previous note for <> case.
+    if ix == 0:
+        prevElement = grammarElement
 
     # Get the last chord first so you can find chord note, scale note, etc.
     try: 
@@ -318,9 +325,25 @@ for grammarElement in m1_grammar.split(' ')[0:1]: # Test on first element.
             m1_elements.insert(currOffset, xNote)
             print ("X Inserted!")
 
+        # Update the last note/rest
+        prevElement = grammarElement
+
     # Case #2: if < > for the increment. Usually for notes after the first one.
     else:
 
         # Case C: chord note, must be within increment (terms[2]).
         if terms[0] == 'C':
-            pass
+            print grammarElement, prevElement
+
+        # Case S:
+            
+        # Case A: approach note, increment constraint as before.
+        elif terms[0] == 'A':
+            print grammarElement, prevElement
+        
+
+
+
+
+        # Update the last note/rest
+        prevElement = grammarElement
