@@ -267,7 +267,7 @@ for grammarElement in m1_grammar.split(' ')[0:1]: # Test on first element.
 
     # Alter stuff here for testing.
     grammarElement = list(grammarElement)
-    grammarElement[0] = 'C' # for testing
+    grammarElement[0] = 'X' # for testing
     grammarElement = ''.join(grammarElement)
 
     terms = grammarElement.split(',')
@@ -302,10 +302,6 @@ for grammarElement in m1_grammar.split(' ')[0:1]: # Test on first element.
         # Case S: scale note. Since no < > (probably beginning of measure),
         # generate it within the range of the chord.
         elif terms[0] == 'S':
-            # sNoteName = genScaleTone(lastChord)
-            # lastChordSort = lastChord.sortAscending()
-            # sNoteOctave = random.choice(xrange(lastChordSort[0].octave, lastChordSort[1].octave))
-            # sNote = note.Note(("%s%s" % (sNoteName, sNoteOctave)))
             sNote = genScaleTone(lastChord)
             m1_elements.insert(currOffset, sNote)
             print ("S Inserted!")
@@ -317,8 +313,10 @@ for grammarElement in m1_grammar.split(' ')[0:1]: # Test on first element.
             print ("A Inserted!")
 
         # Case X: arbitrary tone.
-
-    # For testing: iterate over indices [0:2] instead of [0:1]
+        else:
+            xNote = genArbitraryTone(lastChord)
+            m1_elements.insert(currOffset, xNote)
+            print ("X Inserted!")
 
     # Case #2: if < > for the increment. Usually for notes after the first one.
     else:

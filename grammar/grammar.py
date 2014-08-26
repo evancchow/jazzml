@@ -88,6 +88,10 @@ def genApproachTone(lastChord):
     aNote = sNote.transpose(random.choice([1, -1]))
     return aNote
 
+# Helper method.
+def genArbitraryTone(lastChord):
+    return genScaleTone(lastChord) # fix later, make random note.
+
 def parseMelody(fullMeasureNotes, fullMeasureChords):
 
     """ Given the notes in a measure ('measure') and the chords in that measure
