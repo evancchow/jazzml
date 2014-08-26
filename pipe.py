@@ -258,8 +258,24 @@ m1_chords = stream.Voice()
 for i in allMeasures_chords[1]:
     m1_chords.insert((i.offset % 4), i)
 m1_label = grammarProbDist[lastLabel].generate()
-m1_grammar = random.choice(clusterDict[m1_label])
+m1_grammar = random.choice(clusterDict[m1_label]).replace('S', 'C').replace('A','C')
 # m1_grammar = clusterDict[m1_label][0]
 
 m1_generated = unparseGrammar(m1_grammar, m1_chords)
     
+m = stream.Stream()
+m.insert(0, m1_chords)
+m.insert(0, m1_generated)
+
+# lastLabel = clusterLabels[-1]
+# for measureChords in allMeasures_chords[1]:
+#     m_chords = stream.Voice()
+#     for mc in measureChords:
+#         m_chords.insert((mc.offset % 4), mc)
+#     m_label = grammarProbDist[lastLabel].generate()
+#     m_grammar = random.choice(clusterDict[m_label]).replace('S', 'C').replace('A','C')
+#     m_generated = unparseGrammar(m_grammar, m_chords)
+#     m = stream.Stream()
+#     m.insert(0, m_chords)
+#     m.insert(0, m_generated)
+#     lastLabel = m_label
