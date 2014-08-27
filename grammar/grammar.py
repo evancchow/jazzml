@@ -208,6 +208,12 @@ def parseMelody(fullMeasureNotes, fullMeasureChords):
                 noteDistLower = interval.subtract([noteDist, "m3"])
                 intervalInfo = ",<%s,%s>" % (noteDistUpper.directedName, 
                     noteDistLower.directedName)
+                # print "Upper, lower: %s, %s" % (noteDistUpper,
+                #     noteDistLower)
+                # print "Upper, lower dnames: %s, %s" % (
+                #     noteDistUpper.directedName,
+                #     noteDistLower.directedName)
+                # print "The interval: %s" % (intervalInfo)
                 prevNote = nr
 
         # Return. Do lazy evaluation for real-time performance.

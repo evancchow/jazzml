@@ -20,13 +20,22 @@
 head = lambda x: x[0:5] # from R
 tail = lambda x: x[:-6:-1] # from R
 ppf = lambda n: "%.3f   %s" % (n.offset, n) # pretty print note + offset
+ppn = lambda n: "%.3f   %s" % (n.offset, n.nameWithOctave)
 trc = lambda s: "%s ..." % (s[0:10]) # pretty print first few chars of str
+
+# Print list and stuff.
+def compareGenerated(m1_grammar, m1_elements):
+    for i, j in zip(m1_grammar.split(' '), m1_elements):
+        if isinstance(j, note.Note):
+            print "%s  |  %s" % (ppn(j), i)
+        else:
+            print "%s  |  %s" % (ppf(j), i)
 
 # Imports
 from music21 import *
 from collections import defaultdict, OrderedDict
 from itertools import groupby, izip_longest
-import pygame, copy, sys
+import pygame, copy, sys, pdb
 
 # My imports
 sys.path.append("./extract")
@@ -258,24 +267,87 @@ m1_chords = stream.Voice()
 for i in allMeasures_chords[1]:
     m1_chords.insert((i.offset % 4), i)
 m1_label = grammarProbDist[lastLabel].generate()
-m1_grammar = random.choice(clusterDict[m1_label]).replace('S', 'C').replace('A','C')
-# m1_grammar = clusterDict[m1_label][0]
+# m1_grammar = random.choice(clusterDict[m1_label]).replace('S', 'C').replace('A','C')
+m1_grammar = clusterDict[m1_label][0].replace('S', 'C').replace(' A', ' C')
 
-m1_generated = unparseGrammar(m1_grammar, m1_chords)
-    
-m = stream.Stream()
-m.insert(0, m1_chords)
-m.insert(0, m1_generated)
+print "The grammar: %s\n" % m1_grammar
 
-# lastLabel = clusterLabels[-1]
-# for measureChords in allMeasures_chords[1]:
-#     m_chords = stream.Voice()
-#     for mc in measureChords:
-#         m_chords.insert((mc.offset % 4), mc)
-#     m_label = grammarProbDist[lastLabel].generate()
-#     m_grammar = random.choice(clusterDict[m_label]).replace('S', 'C').replace('A','C')
-#     m_generated = unparseGrammar(m_grammar, m_chords)
-#     m = stream.Stream()
-#     m.insert(0, m_chords)
-#     m.insert(0, m_generated)
-#     lastLabel = m_label
+m1_elements = stream.Voice()
+currOffset = 0.0 # for recalculate last chord.
+prevElement = None
+try:
+    for ix, grammarElement in enumerate(m1_grammar.split(' ')):
+        print ("On iteration %s ..." % ix)
+        # if (ix == 7):
+        #     pdb.set_trace()
+        terms = grammarElement.split(',')
+        currOffset += float(terms[1]) # works just fine
+
+        # Case 1: it's a rest. Just append
+        if terms[0] == 'R':
+            rNote = note.Rest(quarterLength = float(terms[1]))
+            m1_elements.insert(currOffset, rNote)
+            continue
+
+        # Get the last chord first so you can find chord note, scale note, etc.
+        try: 
+            lastChord = [n for n in m1_chords if n.offset <= currOffset][-1]
+        except IndexError:
+            m1_chords[0].offset = 0.0
+            lastChord = [n for n in m1_chords if n.offset <= currOffset][-1]
+
+        # Case: no < > (should just be the first note) so generate from range
+        # of lowest chord note to highest chord note (if not a chord note, else
+        # just generate one of the actual chord notes). 
+
+        # Case #1: if no < > to indicate next note range. Usually this lack of < >
+        # is for the first note (no precedent), or for rests.
+        if (len(terms) == 2): # Case 1: if no < >.
+            insertNote = note.Note() # default is C
+            # Case C: chord note.
+            if terms[0] == 'C':
+                insertNote = genChordTone(lastChord)
+            # Update the stream of generated notes
+            insertNote.quarterLength = float(terms[1])
+            m1_elements.insert(currOffset, insertNote)
+            prevElement = insertNote
+
+        # Case #2: if < > for the increment. Usually for notes after the first one.
+        else:
+            # Get lower, upper intervals and notes.
+            interval1 = interval.Interval(terms[2].replace("<",''))
+            interval2 = interval.Interval(terms[3].replace(">",''))
+            if interval1.cents > interval2.cents:
+                upperInterval, lowerInterval = interval1, interval2
+            else:
+                upperInterval, lowerInterval = interval2, interval1
+            lowPitch = interval.transposePitch(prevElement.pitch, lowerInterval)
+            highPitch = interval.transposePitch(prevElement.pitch, upperInterval)
+            numNotes = int(highPitch.ps - lowPitch.ps + 1) # for range(s, e)
+
+            # Case C: chord note, must be within increment (terms[2]).
+            # First, transpose note with lowerInterval to get note that is
+            # the lower bound. Then iterate over, and find valid notes. Then
+            # choose randomly from those.
+            
+            if terms[0] == 'C':
+                relevantChordTones = []
+                for i in xrange(0, numNotes):
+                    currNote = note.Note(lowPitch.transpose(i).simplifyEnharmonic())
+                    if isChordTone(lastChord, currNote):
+                        relevantChordTones.append(currNote)
+                if len(relevantChordTones) > 1:
+                    insertNote = random.choice([i for i in relevantChordTones
+                        if i.nameWithOctave != prevElement.nameWithOctave])
+                else: # previous tone is the very last preference
+                    insertNote = random.choice(relevantChordTones)
+                insertNote.quarterLength = float(terms[1])
+                m1_elements.insert(currOffset, insertNote)
+
+            prevElement = insertNote
+
+# except (ValueError, TypeError) as e:
+#     print ("Errors caught")
+#     print "%s" % (e)
+except IndexError:
+    print 'hi'
