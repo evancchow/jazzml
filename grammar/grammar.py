@@ -71,11 +71,11 @@ def genScaleTone(lastChord):
     if lastChord.quality == 'major':
         scaleType = scale.MajorScale()
     elif lastChord.quality == 'minor':
-        scaleType = scale.MinorScale()
+        scaleType = scale.WeightedHexatonicBlues() # i.e. minor pentatonic
     elif lastChord.quality == 'augmented':
         scaleType = scale.WholeToneScale()
     else:
-        scaleType = scale.MelodicMinorScale()
+        scaleType = scale.MajorScale()
     # Can change later to deriveAll() for flexibility. If so then use list
     # comprehension of form [x for a in b for x in a].
     scales = scaleType.derive(lastChord) # use deriveAll() later for flexibility
@@ -196,7 +196,7 @@ def parseMelody(fullMeasureNotes, fullMeasureChords):
             diff = measure[ix + 1].offset - nr.offset
 
         # Combine into the note info.
-        noteInfo = "%s,%.3f" % (elementType, diff)
+        noteInfo = "%s,%.3f" % (elementType, nr.quarterLength) # back to diff
 
         # THIRD, get the deltas (max range up, max range down) based on where
         # the previous note was, +- minor 3. Skip rests (don't affect deltas).
@@ -208,7 +208,7 @@ def parseMelody(fullMeasureNotes, fullMeasureChords):
             else:
                 noteDist = interval.Interval(noteStart=prevNote, noteEnd=nr)
                 noteDistUpper = interval.add([noteDist, "m3"])
-                noteDistLower = interval.subtract([noteDist, "m2"])
+                noteDistLower = interval.subtract([noteDist, "m3"])
                 intervalInfo = ",<%s,%s>" % (noteDistUpper.directedName, 
                     noteDistLower.directedName)
                 # print "Upper, lower: %s, %s" % (noteDistUpper,

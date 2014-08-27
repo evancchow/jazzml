@@ -19,17 +19,22 @@
 # Defines
 head = lambda x: x[0:5] # from R
 tail = lambda x: x[:-6:-1] # from R
-ppf = lambda n: "%.3f   %s" % (n.offset, n) # pretty print note + offset
-ppn = lambda n: "%.3f   %s" % (n.offset, n.nameWithOctave)
+ppr = lambda n: "%.3f   %s, %.3f" % (n.offset, n, n.quarterLength) # pretty print note + offset
+ppn = lambda n: "%.3f   %s, %.3f" % (n.offset, n.nameWithOctave, n.quarterLength)
 trc = lambda s: "%s ..." % (s[0:10]) # pretty print first few chars of str
 
 # Print list and stuff.
-def compareGenerated(m1_grammar, m1_elements):
+def compareGen(m1_grammar, m1_elements):
     for i, j in zip(m1_grammar.split(' '), m1_elements):
         if isinstance(j, note.Note):
             print "%s  |  %s" % (ppn(j), i)
         else:
-            print "%s  |  %s" % (ppf(j), i)
+            print "%s  |  %s" % (ppr(j), i)
+
+# From recipes: iterate over list in chunks of n length.
+def grouper(iterable, n, fillvalue=None):
+    args = [iter(iterable)] * n
+    return izip_longest(*args, fillvalue=fillvalue)
 
 # Imports
 from music21 import *
@@ -160,14 +165,18 @@ assert len(allMeasures_chords) == len(allMeasures)
     although it would be nice. """
 
 abstractGrammars = []
+# pdb.set_trace()
 for ix in xrange(1, len(allMeasures)):
+    # pdb.set_trace()
     m = stream.Voice()
     for i in allMeasures[ix]:
         m.insert(i.offset, i)
     c = stream.Voice()
     for j in allMeasures_chords[ix]:
         c.insert(j.offset, j)
-    abstractGrammars.append(parseMelody(m, c))
+    parsed = parseMelody(m, c)
+    # print "%s: %s\n" % (ix, parsed)
+    abstractGrammars.append(parsed)
 
 """ 
     
@@ -265,21 +274,21 @@ grammarProbDist = ConditionalProbDist(grammarFreqDist, MLEProbDist)
 
 lastLabel = clusterLabels[-1]
 genStream = stream.Stream()
-for i in range(1, len(allMeasures_chords)-1):
+currOffset = 0
+for i in range(1, 5): # prev: len(allMeasures_chords)
     # if i == 4:
     #     pdb.set_trace()
-    print "On iteration %s ..." % i
+    # print "On iteration %s ..." % i
 
     m1_chords = stream.Voice()
     for j in allMeasures_chords[i]:
         m1_chords.insert((j.offset % 4), j)
     m1_label = grammarProbDist[lastLabel].generate()
-    m1_grammar = random.choice(clusterDict[m1_label]).replace(' A',' C').replace(' X',' C')
+    m1_grammar = random.choice(clusterDict[m1_label]) \
+        .replace(' X', ' S').replace(' A', ' S')
+        # .replace(' A',' C').replace(' X',' C').replace(' S', ' C')
     m1_notes = unparseGrammar(m1_grammar, m1_chords)
-    m1_notes.insert(0, instrument.ElectricGuitar())
-    # m = stream.Stream()
-    # m.insert(0, m1_chords)
-    # m.insert(0, m1_notes)
+    # pdb.set_trace()
 
     # prune notes based on how far into solo
     # TODO: work on this. Can start by running and getting toRemove formula right.
@@ -291,33 +300,38 @@ for i in range(1, len(allMeasures_chords)-1):
     # for i in toRemove:
     #     m1_notes.remove(m1[i])
 
-    m = stream.Measure()
-    m.insert(0, m1_chords)
-    m.insert(0, m1_notes)
-    m.insert(0, meter.TimeSignature('4/4'))
-
-    genStream.append(m)
-
-play(genStream)
-
-# For real-time, use pygame.mixer.music.play() and pygame.mixer.music.queue().
-
-# for ix, m in enumerate(genStream):
-#     if ix == 0:
-#         pygame.mixer.music.play(m)
-#     else:
-#         pygame.mixer.music.queue(m)
+    # Pruning #1: remove repeated notes.
+    # pdb.set_trace()
+    for n1, n2 in grouper(m1_notes, n=2):
+        if n2 == None: # corner case: odd-length list
+            continue
+        if (n2.offset - n1.offset) < 0.25:
+            m1_notes.remove(n2) 
+        if isinstance(n1, note.Note) and isinstance(n2, note.Note):
+            if n1.nameWithOctave == n2.nameWithOctave:
+                m1_notes.remove(n2)
 
 
-# lastLabel = clusterLabels[-1]
-# m1_chords = stream.Voice()
-# for i in allMeasures_chords[1]:
-#     m1_chords.insert((i.offset % 4), i)
-# m1_label = grammarProbDist[lastLabel].generate()
-# m1_grammar = random.choice(clusterDict[m1_label]).replace(' A', ' C').replace(' X',' C')
-# m1_notes = unparseGrammar(m1_grammar, m1_chords)
-# compareGenerated(m1_grammar, m1_notes)
-# m1_notes.insert(0, instrument.ElectricGuitar()) # sounds nice on electric guitar!
-# m = stream.Stream()
-# m.insert(0, m1_chords)
-# m.insert(0, m1_notes)
+    # pdb.set_trace()
+
+    # Final thing to do: insert the instrument.
+    m1_notes.insert(0, instrument.ElectricGuitar())
+
+    for m in m1_notes:
+        genStream.insert(currOffset + m.offset, m)
+    for mc in m1_chords:
+        genStream.insert(currOffset + mc.offset, mc)
+
+    currOffset += 4.0
+
+    # m = stream.Measure()
+    # m.insert(0, m1_chords)
+    # m.insert(0, m1_notes)
+    # m.insert(0, meter.TimeSignature('4/4'))
+
+    # genStream.append(m)
+
+# play(genStream)
+
+
+# useful: compareGen(m1_grammar, m1_notes[1:])
