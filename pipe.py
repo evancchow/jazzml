@@ -282,6 +282,7 @@ for i in range(1, len(allMeasures_chords)-1):
     # m.insert(0, m1_notes)
 
     # prune notes based on how far into solo
+    # TODO: work on this. Can start by running and getting toRemove formula right.
     noteIxs = [ix for ix, j in enumerate(m1_notes) if isinstance(j, note.Note)]
     try: 
         toRemove = min(3, random.sample(noteIxs, int(math.sqrt(len(noteIxs)) / i)))
