@@ -1,15 +1,16 @@
-#################################################################
+######################################################################
 # grammar.py
 # Name: Evan Chow
 # Description: generates a string representation of the measures
 # in a melody stream.
 #
-##################################################################
+# should divide into modules 'scaletone.py', 'approachtone.py', etc.
+#######################################################################
 
 from collections import OrderedDict, defaultdict
 from itertools import groupby
 from music21 import *
-import copy, random
+import copy, random, pdb
 
 # Helper method.
 def isScaleTone(chord, note):
@@ -73,6 +74,8 @@ def genScaleTone(lastChord):
         scaleType = scale.MinorScale()
     elif lastChord.quality == 'augmented':
         scaleType = scale.WholeToneScale()
+    else:
+        scaleType = scale.MelodicMinorScale()
     # Can change later to deriveAll() for flexibility. If so then use list
     # comprehension of form [x for a in b for x in a].
     scales = scaleType.derive(lastChord) # use deriveAll() later for flexibility
@@ -82,7 +85,7 @@ def genScaleTone(lastChord):
     # Return a note (no octave here) in a scale that matches the lastChord.
     sNoteName = random.choice(allNoteNames)
     lastChordSort = lastChord.sortAscending()
-    sNoteOctave = random.choice(xrange(lastChordSort[0].octave, lastChordSort[1].octave))
+    sNoteOctave = random.choice([i.octave for i in lastChordSort.pitches])
     sNote = note.Note(("%s%s" % (sNoteName, sNoteOctave)))
     return sNote
 
@@ -306,7 +309,13 @@ def unparseGrammar(m1_grammar, m1_chords):
                     insertNote = random.choice([i for i in relevantChordTones
                         if i.nameWithOctave != prevElement.nameWithOctave])
                 else: # previous tone is the very last preference
-                    insertNote = random.choice(relevantChordTones)
+                    try:
+                        insertNote = random.choice(relevantChordTones)
+                    except IndexError:
+                        print "Couldn't parse, sorry"
+                        print "Lo, hi: %s, %s" % (lowPitch, highPitch)
+                        print relevantChordTones
+                        pdb.set_trace()
                 if insertNote.octave < 3:
                     insertNote.octave = 3
                 insertNote.quarterLength = float(terms[1])

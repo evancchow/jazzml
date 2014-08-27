@@ -265,9 +265,11 @@ grammarProbDist = ConditionalProbDist(grammarFreqDist, MLEProbDist)
 
 lastLabel = clusterLabels[-1]
 genStream = stream.Stream()
-for i in range(1, 5):
-    # if i == 1:
+for i in range(1, len(allMeasures_chords)-1):
+    # if i == 4:
     #     pdb.set_trace()
+    print "On iteration %s ..." % i
+    
     m1_chords = stream.Voice()
     for j in allMeasures_chords[i]:
         m1_chords.insert((j.offset % 4), j)
@@ -275,20 +277,26 @@ for i in range(1, 5):
     m1_grammar = random.choice(clusterDict[m1_label]).replace(' A',' C').replace(' X',' C')
     m1_notes = unparseGrammar(m1_grammar, m1_chords)
     m1_notes.insert(0, instrument.ElectricGuitar())
-    m = stream.Stream()
+    # m = stream.Stream()
+    # m.insert(0, m1_chords)
+    # m.insert(0, m1_notes)
+
+    m = stream.Measure()
     m.insert(0, m1_chords)
     m.insert(0, m1_notes)
+    m.insert(0, meter.TimeSignature('4/4'))
+
     genStream.append(m)
 
-pdb.set_trace()
+play(genStream)
 
 # For real-time, use pygame.mixer.music.play() and pygame.mixer.music.queue().
 
-for ix, m in enumerate(genStream):
-    if ix == 0:
-        pygame.mixer.music.play(m)
-    else:
-        pygame.mixer.music.queue(m)
+# for ix, m in enumerate(genStream):
+#     if ix == 0:
+#         pygame.mixer.music.play(m)
+#     else:
+#         pygame.mixer.music.queue(m)
 
 
 # lastLabel = clusterLabels[-1]
