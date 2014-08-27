@@ -22,10 +22,6 @@ def isScaleTone(chord, note):
     scaleType = scale.MinorScale()
     if chord.quality == 'major':
         scaleType = scale.MajorScale()
-    elif chord.quality == 'minor':
-        scaleType = scale.MinorScale()
-    elif chord.quality == 'augmented':
-        scaleType = scale.WholeToneScale()
     # Can change later to deriveAll() for flexibility. If so then use list
     # comprehension of form [x for a in b for x in a].
     scales = scaleType.derive(chord) # use deriveAll() later for flexibility
@@ -71,7 +67,7 @@ def genScaleTone(lastChord):
     if lastChord.quality == 'major':
         scaleType = scale.MajorScale()
     elif lastChord.quality == 'minor':
-        scaleType = scale.WeightedHexatonicBlues() # i.e. minor pentatonic
+        scaleType = scale.MinorScale() # i.e. minor pentatonic
     elif lastChord.quality == 'augmented':
         scaleType = scale.WholeToneScale()
     else:

@@ -267,6 +267,13 @@ grammarProbDist = ConditionalProbDist(grammarFreqDist, MLEProbDist)
 
 """ Note: the measure, chords and all, starts at 0.00. Alter if needed. """
 
+def chooseRankedGrammar(index, vals):
+    """ Rank the dictionary values (vals) by # of notes, and depending on how
+        high index is, choose them. For example, if index = 1, then likely
+        toward beginning of piece, so give higher weight to the elements in
+        vals that have fewer notes. """ 
+    pass
+    
 # One measure test: generate a label (based on last label of
 # the original dataset, since only one measure here), and create notes
 # for it. Test measure = 1st measure of training set.
@@ -275,7 +282,7 @@ grammarProbDist = ConditionalProbDist(grammarFreqDist, MLEProbDist)
 lastLabel = clusterLabels[-1]
 genStream = stream.Stream()
 currOffset = 0
-for i in range(1, 5): # prev: len(allMeasures_chords)
+for i in range(1, len(allMeasures_chords)): # prev: len(allMeasures_chords)
     # if i == 4:
     #     pdb.set_trace()
     # print "On iteration %s ..." % i
@@ -285,8 +292,8 @@ for i in range(1, 5): # prev: len(allMeasures_chords)
         m1_chords.insert((j.offset % 4), j)
     m1_label = grammarProbDist[lastLabel].generate()
     m1_grammar = random.choice(clusterDict[m1_label]) \
-        .replace(' X', ' S').replace(' A', ' S')
-        # .replace(' A',' C').replace(' X',' C').replace(' S', ' C')
+        .replace(' A',' C').replace(' X',' C')
+        # .replace(' C', ' S').replace(' X', ' S').replace(' A', ' S')
     m1_notes = unparseGrammar(m1_grammar, m1_chords)
     # pdb.set_trace()
 
