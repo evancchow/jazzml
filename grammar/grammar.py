@@ -19,7 +19,7 @@ def isScaleTone(chord, note):
 
     # Derive major or minor scales (minor if 'other') based on the quality
     # of the chord.
-    scaleType = scale.MinorScale()
+    scaleType = scale.WeightedHexatonicBlues() # i.e. minor pentatonic
     if chord.quality == 'major':
         scaleType = scale.MajorScale()
     # Can change later to deriveAll() for flexibility. If so then use list

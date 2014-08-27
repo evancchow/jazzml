@@ -205,16 +205,17 @@ coefDict = {'C' : 0.8, 'S' : 0.6, 'A' : 0.4,'X' : 0.2, 'R' : 0.1 }
 features = np.empty([len(abstractGrammars), 2])
 for ix, currGrammar in enumerate(abstractGrammars):
     # Test case for one measure. Works just fine.
-    numNotes = 0
+    # pdb.set_trace()
+    numDownSlope = currGrammar.count('-')
     consonance = 0.0
     for i in currGrammar.split(' '):
         terms = i.split(',')
         # increment # of notes if it's a note
         if terms[0] != 'R':
-            numNotes += 1
+            numDownSlope += 1
         # cumulatively calculate consonance for the measures
         consonance += coefDict[terms[0]] * float(terms[1])
-    features[ix, 0] = numNotes
+    features[ix, 0] = numDownSlope
     features[ix, 1] = consonance
 
 # Cluster with KMeans, 3 clusters.
@@ -267,12 +268,29 @@ grammarProbDist = ConditionalProbDist(grammarFreqDist, MLEProbDist)
 
 """ Note: the measure, chords and all, starts at 0.00. Alter if needed. """
 
-def chooseRankedGrammar(index, vals):
+nnotes = lambda x: len([i for i in x.split(' ') if 'R' not in i])
+
+def chooseRankedGrammar(currIndex, indexEnd, currVals):
     """ Rank the dictionary values (vals) by # of notes, and depending on how
         high index is, choose them. For example, if index = 1, then likely
         toward beginning of piece, so give higher weight to the elements in
-        vals that have fewer notes. """ 
-    pass
+        vals that have fewer notes. 
+
+        tl;dr, play more notes the further you get into a solo (as a 
+        general sort of trend). """ 
+
+    rankedVals = sorted(currVals, key=lambda x: len([i for i in \
+        x.split(' ') if 'R' not in i]))
+    # Index function: finalIx = (currIndex / indexEnd)**2. Parabola.
+    chooseIndex = (np.sqrt(float(currIndex) / indexEnd)) * len(rankedVals)
+    # Choose upper or lower element of chooseIndex (a float) for randomness
+    # pdb.set_trace()
+    if (currIndex < len(currVals)):
+        randIndex = int(random.choice([np.floor(chooseIndex), np.ceil(chooseIndex)]))
+    else:
+        randIndex = int(np.floor(chooseIndex))
+
+    return rankedVals[randIndex]
 
 # One measure test: generate a label (based on last label of
 # the original dataset, since only one measure here), and create notes
@@ -281,8 +299,12 @@ def chooseRankedGrammar(index, vals):
 
 lastLabel = clusterLabels[-1]
 genStream = stream.Stream()
+
+# Where to start, end loop
 currOffset = 0
-for i in range(1, len(allMeasures_chords)): # prev: len(allMeasures_chords)
+loopEnd = len(allMeasures_chords)
+
+for i in range(1, loopEnd): # prev: len(allMeasures_chords)
     # if i == 4:
     #     pdb.set_trace()
     # print "On iteration %s ..." % i
@@ -291,10 +313,14 @@ for i in range(1, len(allMeasures_chords)): # prev: len(allMeasures_chords)
     for j in allMeasures_chords[i]:
         m1_chords.insert((j.offset % 4), j)
     m1_label = grammarProbDist[lastLabel].generate()
-    m1_grammar = random.choice(clusterDict[m1_label]) \
-        .replace(' A',' C').replace(' X',' C')
+    m1_grammar = chooseRankedGrammar(i, loopEnd, clusterDict[m1_label]) \
+        .replace(' A',' C').replace(' X',' C').replace(' S', ' C')
         # .replace(' C', ' S').replace(' X', ' S').replace(' A', ' S')
     m1_notes = unparseGrammar(m1_grammar, m1_chords)
+
+    # QA: print number of notes in m1_notes. Should see general increasing trend.
+    print "Iteration %s: %s notes" % (i, len([i for i in m1_notes
+        if isinstance(i, note.Note)]))
     # pdb.set_trace()
 
     # prune notes based on how far into solo
@@ -307,13 +333,14 @@ for i in range(1, len(allMeasures_chords)): # prev: len(allMeasures_chords)
     # for i in toRemove:
     #     m1_notes.remove(m1[i])
 
-    # Pruning #1: remove repeated notes.
+    # Pruning #1: remove repeated notes, and notes WAY too close together.
     # pdb.set_trace()
     for n1, n2 in grouper(m1_notes, n=2):
         if n2 == None: # corner case: odd-length list
             continue
         if (n2.offset - n1.offset) < 0.25:
-            m1_notes.remove(n2) 
+            if random.choice([True, True, False]):
+                m1_notes.remove(n2) 
         if isinstance(n1, note.Note) and isinstance(n2, note.Note):
             if n1.nameWithOctave == n2.nameWithOctave:
                 m1_notes.remove(n2)
