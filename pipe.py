@@ -262,133 +262,44 @@ grammarProbDist = ConditionalProbDist(grammarFreqDist, MLEProbDist)
 # the original dataset, since only one measure here), and create notes
 # for it. Test measure = 1st measure of training set.
 # In other words: measure #1 of next iteration of training set.
+
 lastLabel = clusterLabels[-1]
-m1_chords = stream.Voice()
-for i in allMeasures_chords[1]:
-    m1_chords.insert((i.offset % 4), i)
-m1_label = grammarProbDist[lastLabel].generate()
-m1_grammar = random.choice(clusterDict[m1_label])
+genStream = stream.Stream()
+for i in range(1, 5):
+    # if i == 1:
+    #     pdb.set_trace()
+    m1_chords = stream.Voice()
+    for j in allMeasures_chords[i]:
+        m1_chords.insert((j.offset % 4), j)
+    m1_label = grammarProbDist[lastLabel].generate()
+    m1_grammar = random.choice(clusterDict[m1_label]).replace(' A',' C').replace(' X',' C')
+    m1_notes = unparseGrammar(m1_grammar, m1_chords)
+    m1_notes.insert(0, instrument.ElectricGuitar())
+    m = stream.Stream()
+    m.insert(0, m1_chords)
+    m.insert(0, m1_notes)
+    genStream.append(m)
 
-print "The grammar: %s\n" % m1_grammar
+pdb.set_trace()
 
-m1_elements = stream.Voice()
-currOffset = 0.0 # for recalculate last chord.
-prevElement = None
-try:
-    for ix, grammarElement in enumerate(m1_grammar.split(' ')):
-        print ("On iteration %s ..." % ix)
-        # if (ix == 7):
-        #     pdb.set_trace()
-        terms = grammarElement.split(',')
-        currOffset += float(terms[1]) # works just fine
+# For real-time, use pygame.mixer.music.play() and pygame.mixer.music.queue().
 
-        # Case 1: it's a rest. Just append
-        if terms[0] == 'R':
-            rNote = note.Rest(quarterLength = float(terms[1]))
-            m1_elements.insert(currOffset, rNote)
-            continue
+for ix, m in enumerate(genStream):
+    if ix == 0:
+        pygame.mixer.music.play(m)
+    else:
+        pygame.mixer.music.queue(m)
 
-        # Get the last chord first so you can find chord note, scale note, etc.
-        try: 
-            lastChord = [n for n in m1_chords if n.offset <= currOffset][-1]
-        except IndexError:
-            m1_chords[0].offset = 0.0
-            lastChord = [n for n in m1_chords if n.offset <= currOffset][-1]
 
-        # Case: no < > (should just be the first note) so generate from range
-        # of lowest chord note to highest chord note (if not a chord note, else
-        # just generate one of the actual chord notes). 
-
-        # Case #1: if no < > to indicate next note range. Usually this lack of < >
-        # is for the first note (no precedent), or for rests.
-        if (len(terms) == 2): # Case 1: if no < >.
-            insertNote = note.Note() # default is C
-            # Case C: chord note.
-            if terms[0] == 'C':
-                insertNote = genChordTone(lastChord)
-
-            # Case S: scale note.
-            elif terms[0] == 'S':
-                insertNote = genScaleTone(lastChord)
-
-            # Case A: approach note.
-            # Handle both A and X notes here for now.
-            else:
-                insertNote = genApproachTone(lastChord)
-
-            # Update the stream of generated notes
-            insertNote.quarterLength = float(terms[1])
-            m1_elements.insert(currOffset, insertNote)
-            prevElement = insertNote
-
-        # Case #2: if < > for the increment. Usually for notes after the first one.
-        else:
-            # Get lower, upper intervals and notes.
-            interval1 = interval.Interval(terms[2].replace("<",''))
-            interval2 = interval.Interval(terms[3].replace(">",''))
-            if interval1.cents > interval2.cents:
-                upperInterval, lowerInterval = interval1, interval2
-            else:
-                upperInterval, lowerInterval = interval2, interval1
-            lowPitch = interval.transposePitch(prevElement.pitch, lowerInterval)
-            highPitch = interval.transposePitch(prevElement.pitch, upperInterval)
-            numNotes = int(highPitch.ps - lowPitch.ps + 1) # for range(s, e)
-
-            # Case C: chord note, must be within increment (terms[2]).
-            # First, transpose note with lowerInterval to get note that is
-            # the lower bound. Then iterate over, and find valid notes. Then
-            # choose randomly from those.
-            
-            if terms[0] == 'C':
-                relevantChordTones = []
-                for i in xrange(0, numNotes):
-                    currNote = note.Note(lowPitch.transpose(i).simplifyEnharmonic())
-                    if isChordTone(lastChord, currNote):
-                        relevantChordTones.append(currNote)
-                if len(relevantChordTones) > 1:
-                    insertNote = random.choice([i for i in relevantChordTones
-                        if i.nameWithOctave != prevElement.nameWithOctave])
-                else: # previous tone is the very last preference
-                    insertNote = random.choice(relevantChordTones)
-                insertNote.quarterLength = float(terms[1])
-                m1_elements.insert(currOffset, insertNote)
-
-            # Case S: scale note, must be within increment.
-            elif terms[0] == 'S':
-                relevantScaleTones = []
-                for i in xrange(0, numNotes):
-                    currNote = note.Note(lowPitch.transpose(i).simplifyEnharmonic())
-                    if isScaleTone(lastChord, currNote):
-                        relevantScaleTones.append(currNote)
-                if len(relevantScaleTones) > 1:
-                    insertNote = random.choice([i for i in relevantScaleTones
-                        if i.nameWithOctave != prevElement.nameWithOctave])
-                else:
-                    insertNote = random.choice(relevantScaleTones)
-                insertNote.quarterLength = float(terms[1])
-                m1_elements.insert(currOffset, insertNote)
-
-            # Case A: approach tone, must be within increment.
-            # For now: handle both A and X cases.
-            else:
-                relevantApproachTones = []
-                for i in xrange(0, numNotes):
-                    currNote = note.Note(lowPitch.transpose(i).simplifyEnharmonic())
-                    if isApproachTone(lastChord, currNote):
-                        relevantApproachTones.append(currNote)
-                if len(relevantApproachTones) > 1:
-                    insertNote = random.choice([i for i in relevantApproachTones
-                        if i.nameWithOctave != prevElement.nameWithOctave])
-                else:
-                    insertNote = random.choice(relevantApproachTones)
-                insertNote.quarterLength = float(terms[1])
-                m1_elements.insert(currOffset, insertNote)
-
-            # update the previous element.
-            prevElement = insertNote
-
-# except (ValueError, TypeError) as e:
-#     print ("Errors caught")
-#     print "%s" % (e)
-except IndexError:
-    print 'hi'
+# lastLabel = clusterLabels[-1]
+# m1_chords = stream.Voice()
+# for i in allMeasures_chords[1]:
+#     m1_chords.insert((i.offset % 4), i)
+# m1_label = grammarProbDist[lastLabel].generate()
+# m1_grammar = random.choice(clusterDict[m1_label]).replace(' A', ' C').replace(' X',' C')
+# m1_notes = unparseGrammar(m1_grammar, m1_chords)
+# compareGenerated(m1_grammar, m1_notes)
+# m1_notes.insert(0, instrument.ElectricGuitar()) # sounds nice on electric guitar!
+# m = stream.Stream()
+# m.insert(0, m1_chords)
+# m.insert(0, m1_notes)

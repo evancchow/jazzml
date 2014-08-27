@@ -224,15 +224,18 @@ def parseMelody(fullMeasureNotes, fullMeasureChords):
 
 
 def unparseGrammar(m1_grammar, m1_chords):
-    """ Given a grammar string and the measure chords, returns the generated
+    """ Given a grammar string and chords for a measure, returns the generated
         notes for that measure. """
+
     m1_elements = stream.Voice()
     currOffset = 0.0 # for recalculate last chord.
     prevElement = None
     for ix, grammarElement in enumerate(m1_grammar.split(' ')):
-
+        # print ("On iteration %s ..." % ix)
+        # if (ix == 7):
+        #     pdb.set_trace()
         terms = grammarElement.split(',')
-        currOffset += float(terms[1])
+        currOffset += float(terms[1]) # works just fine
 
         # Case 1: it's a rest. Just append
         if terms[0] == 'R':
@@ -254,35 +257,25 @@ def unparseGrammar(m1_grammar, m1_chords):
         # Case #1: if no < > to indicate next note range. Usually this lack of < >
         # is for the first note (no precedent), or for rests.
         if (len(terms) == 2): # Case 1: if no < >.
-
-            insertNote = note.Note()
-
+            insertNote = note.Note() # default is C
             # Case C: chord note.
             if terms[0] == 'C':
                 insertNote = genChordTone(lastChord)
 
-            # Case S: scale note. Since no < > (probably beginning of measure),
-            # generate it within the range of the chord.
+            # Case S: scale note.
             elif terms[0] == 'S':
                 insertNote = genScaleTone(lastChord)
 
             # Case A: approach note.
-            elif terms[0] == 'A':
+            # Handle both A and X notes here for now.
+            else:
                 insertNote = genApproachTone(lastChord)
 
-            # Case X: arbitrary tone.
-            else:
-                insertNote = genArbitraryTone(lastChord)
-
-            # FIX: if octave < 3, then change it to 3. (mostly to fix
-            # the first notes in a sequence)
-            if insertNote.octave < 4:
-                insertNote.octave = 4
-
             # Update the stream of generated notes
+            insertNote.quarterLength = float(terms[1])
+            if insertNote.octave < 3:
+                insertNote.octave = 3
             m1_elements.insert(currOffset, insertNote)
-
-            # Update the last note/rest
             prevElement = insertNote
 
         # Case #2: if < > for the increment. Usually for notes after the first one.
@@ -296,7 +289,7 @@ def unparseGrammar(m1_grammar, m1_chords):
                 upperInterval, lowerInterval = interval2, interval1
             lowPitch = interval.transposePitch(prevElement.pitch, lowerInterval)
             highPitch = interval.transposePitch(prevElement.pitch, upperInterval)
-            numNotes = int(highPitch.ps - lowPitch.ps + 2) # for range(s, e)
+            numNotes = int(highPitch.ps - lowPitch.ps + 1) # for range(s, e)
 
             # Case C: chord note, must be within increment (terms[2]).
             # First, transpose note with lowerInterval to get note that is
@@ -305,40 +298,56 @@ def unparseGrammar(m1_grammar, m1_chords):
             
             if terms[0] == 'C':
                 relevantChordTones = []
-                for i in xrange(1, numNotes):
+                for i in xrange(0, numNotes):
                     currNote = note.Note(lowPitch.transpose(i).simplifyEnharmonic())
                     if isChordTone(lastChord, currNote):
                         relevantChordTones.append(currNote)
-                insertNote = random.choice(relevantChordTones)
+                if len(relevantChordTones) > 1:
+                    insertNote = random.choice([i for i in relevantChordTones
+                        if i.nameWithOctave != prevElement.nameWithOctave])
+                else: # previous tone is the very last preference
+                    insertNote = random.choice(relevantChordTones)
+                if insertNote.octave < 3:
+                    insertNote.octave = 3
                 insertNote.quarterLength = float(terms[1])
                 m1_elements.insert(currOffset, insertNote)
 
-            # Case S:
+            # Case S: scale note, must be within increment.
             elif terms[0] == 'S':
                 relevantScaleTones = []
-                for i in xrange(1, numNotes):
+                for i in xrange(0, numNotes):
                     currNote = note.Note(lowPitch.transpose(i).simplifyEnharmonic())
                     if isScaleTone(lastChord, currNote):
                         relevantScaleTones.append(currNote)
-                insertNote = random.choice(relevantScaleTones)
+                if len(relevantScaleTones) > 1:
+                    insertNote = random.choice([i for i in relevantScaleTones
+                        if i.nameWithOctave != prevElement.nameWithOctave])
+                else:
+                    insertNote = random.choice(relevantScaleTones)
+                if insertNote.octave < 3:
+                    insertNote.octave = 3
                 insertNote.quarterLength = float(terms[1])
                 m1_elements.insert(currOffset, insertNote)
-                        
-            # Case A: approach note, increment constraint as before.
-            elif terms[0] == 'A':
+
+            # Case A: approach tone, must be within increment.
+            # For now: handle both A and X cases.
+            else:
                 relevantApproachTones = []
-                for i in xrange(1, numNotes):
+                for i in xrange(0, numNotes):
                     currNote = note.Note(lowPitch.transpose(i).simplifyEnharmonic())
                     if isApproachTone(lastChord, currNote):
                         relevantApproachTones.append(currNote)
-                insertNote = random.choice(relevantApproachTones)
+                if len(relevantApproachTones) > 1:
+                    insertNote = random.choice([i for i in relevantApproachTones
+                        if i.nameWithOctave != prevElement.nameWithOctave])
+                else:
+                    insertNote = random.choice(relevantApproachTones)
+                if insertNote.octave < 3:
+                    insertNote.octave = 3
                 insertNote.quarterLength = float(terms[1])
                 m1_elements.insert(currOffset, insertNote)
-            
-            # Case X: Arbitrary tones, within increments of course.
-            else:
-                randomTone = note.Note(lowPitch.transpose(random.choice(xrange(1, numNotes))).simplifyEnharmonic())
-                randomTone.quarterLength = float(terms[1])
-                m1_elements.insert(currOffset, randomTone)
 
-    return m1_elements
+            # update the previous element.
+            prevElement = insertNote
+
+    return m1_elements    
