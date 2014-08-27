@@ -339,7 +339,7 @@ for i in range(1, len(allMeasures_chords)): # prev: len(allMeasures_chords)
     # genStream.append(m)
 
 genStream.insert(0.0, instrument.ElectricGuitar())
-genStream.insert(0.0, tempo.MetronomeMark(144))
+genStream.insert(0.0, tempo.MetronomeMark(number=130))
 # play(genStream)
 
 
