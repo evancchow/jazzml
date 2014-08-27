@@ -23,6 +23,13 @@ ppr = lambda n: "%.3f   %s, %.3f" % (n.offset, n, n.quarterLength) # pretty prin
 ppn = lambda n: "%.3f   %s, %.3f" % (n.offset, n.nameWithOctave, n.quarterLength)
 trc = lambda s: "%s ..." % (s[0:10]) # pretty print first few chars of str
 
+# Print a formatted note or rest.
+def pretty(element):
+    if isinstance(element, note.Note):
+        return ppn(element)
+    else:
+        return ppr(element)
+
 # Print list and stuff.
 def compareGen(m1_grammar, m1_elements):
     for i, j in zip(m1_grammar.split(' '), m1_elements):
@@ -204,6 +211,9 @@ coefDict = {'C' : 0.8, 'S' : 0.6, 'A' : 0.4,'X' : 0.2, 'R' : 0.1 }
 # Extract features for each measure.
 features = np.empty([len(abstractGrammars), 2])
 for ix, currGrammar in enumerate(abstractGrammars):
+    # TODO: maybe replace numDownSlope instead with a different feature:
+    # number of times notes change direction.
+
     # Test case for one measure. Works just fine.
     # pdb.set_trace()
     numDownSlope = currGrammar.count('-')
@@ -333,9 +343,10 @@ for i in range(1, loopEnd): # prev: len(allMeasures_chords)
     # for i in toRemove:
     #     m1_notes.remove(m1[i])
 
-    
+
     # Pruning #1: "Smooth" the measure, or make sure that everything is in 
     # standard note lengths (0.125, 0.250, 0.333 ... nothing like .482).
+    # Maybe just start with rounding to nearest multiple of 0.125.
     pdb.set_trace()
 
     # Pruning #2: remove repeated notes, and notes WAY too close together.
