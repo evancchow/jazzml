@@ -208,7 +208,7 @@ def parseMelody(fullMeasureNotes, fullMeasureChords):
             else:
                 noteDist = interval.Interval(noteStart=prevNote, noteEnd=nr)
                 noteDistUpper = interval.add([noteDist, "m3"])
-                noteDistLower = interval.subtract([noteDist, "m3"])
+                noteDistLower = interval.subtract([noteDist, "m2"])
                 intervalInfo = ",<%s,%s>" % (noteDistUpper.directedName, 
                     noteDistLower.directedName)
                 # print "Upper, lower: %s, %s" % (noteDistUpper,
@@ -327,8 +327,10 @@ def unparseGrammar(m1_grammar, m1_chords):
                 if len(relevantScaleTones) > 1:
                     insertNote = random.choice([i for i in relevantScaleTones
                         if i.nameWithOctave != prevElement.nameWithOctave])
-                else:
-                    insertNote = random.choice(relevantScaleTones)
+                elif len(relevantScaleTones) == 1:
+                    insertNote = relevantScaleTones[0]
+                else: # if no choices, set to prev element +-1 whole step
+                    insertNote = prevElement.transpose(random.choice([-2,2]))
                 if insertNote.octave < 3:
                     insertNote.octave = 3
                 insertNote.quarterLength = float(terms[1])
@@ -345,8 +347,10 @@ def unparseGrammar(m1_grammar, m1_chords):
                 if len(relevantApproachTones) > 1:
                     insertNote = random.choice([i for i in relevantApproachTones
                         if i.nameWithOctave != prevElement.nameWithOctave])
-                else:
-                    insertNote = random.choice(relevantApproachTones)
+                elif len(relevantApproachTones) == 1:
+                    insertNote = relevantApproachTones[0]
+                else: # if no choices, set to prev element +-1 whole step
+                    insertNote = prevElement.transpose(random.choice([-2,2]))
                 if insertNote.octave < 3:
                     insertNote.octave = 3
                 insertNote.quarterLength = float(terms[1])

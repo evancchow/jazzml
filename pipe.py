@@ -35,7 +35,7 @@ def compareGenerated(m1_grammar, m1_elements):
 from music21 import *
 from collections import defaultdict, OrderedDict
 from itertools import groupby, izip_longest
-import pygame, copy, sys, pdb
+import pygame, copy, sys, pdb, math
 
 # My imports
 sys.path.append("./extract")
@@ -269,7 +269,7 @@ for i in range(1, len(allMeasures_chords)-1):
     # if i == 4:
     #     pdb.set_trace()
     print "On iteration %s ..." % i
-    
+
     m1_chords = stream.Voice()
     for j in allMeasures_chords[i]:
         m1_chords.insert((j.offset % 4), j)
@@ -280,6 +280,15 @@ for i in range(1, len(allMeasures_chords)-1):
     # m = stream.Stream()
     # m.insert(0, m1_chords)
     # m.insert(0, m1_notes)
+
+    # prune notes based on how far into solo
+    noteIxs = [ix for ix, j in enumerate(m1_notes) if isinstance(j, note.Note)]
+    try: 
+        toRemove = min(3, random.sample(noteIxs, int(math.sqrt(len(noteIxs)) / i)))
+    except TypeError:
+        pdb.set_trace()
+    for i in toRemove:
+        m1_notes.remove(m1[i])
 
     m = stream.Measure()
     m.insert(0, m1_chords)
