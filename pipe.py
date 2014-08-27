@@ -267,8 +267,7 @@ m1_chords = stream.Voice()
 for i in allMeasures_chords[1]:
     m1_chords.insert((i.offset % 4), i)
 m1_label = grammarProbDist[lastLabel].generate()
-# m1_grammar = random.choice(clusterDict[m1_label]).replace('S', 'C').replace('A','C')
-m1_grammar = clusterDict[m1_label][0].replace('S', 'C').replace(' A', ' C')
+m1_grammar = random.choice(clusterDict[m1_label]).replace('S', 'C').replace(' A', ' C')
 
 print "The grammar: %s\n" % m1_grammar
 
@@ -309,6 +308,8 @@ try:
                 insertNote = genChordTone(lastChord)
             # Update the stream of generated notes
             insertNote.quarterLength = float(terms[1])
+            if insertNote.octave < 3: # keep above certain threshold.
+                insertNote.octave = 3
             m1_elements.insert(currOffset, insertNote)
             prevElement = insertNote
 
@@ -342,6 +343,8 @@ try:
                 else: # previous tone is the very last preference
                     insertNote = random.choice(relevantChordTones)
                 insertNote.quarterLength = float(terms[1])
+                if insertNote.octave < 3: # keep above certain threshold.
+                    insertNote.octave = 3
                 m1_elements.insert(currOffset, insertNote)
 
             prevElement = insertNote
