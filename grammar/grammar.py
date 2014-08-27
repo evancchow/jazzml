@@ -308,14 +308,10 @@ def unparseGrammar(m1_grammar, m1_chords):
                 if len(relevantChordTones) > 1:
                     insertNote = random.choice([i for i in relevantChordTones
                         if i.nameWithOctave != prevElement.nameWithOctave])
-                else: # previous tone is the very last preference
-                    try:
-                        insertNote = random.choice(relevantChordTones)
-                    except IndexError:
-                        print "Couldn't parse, sorry"
-                        print "Lo, hi: %s, %s" % (lowPitch, highPitch)
-                        print relevantChordTones
-                        pdb.set_trace()
+                elif len(relevantChordTones) == 1:
+                    insertNote = relevantChordTones[0]
+                else: # if no choices, set to prev element +-1 whole step
+                    insertNote = prevElement.transpose(random.choice([-2,2]))
                 if insertNote.octave < 3:
                     insertNote.octave = 3
                 insertNote.quarterLength = float(terms[1])
