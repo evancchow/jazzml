@@ -218,7 +218,7 @@ for ix, currGrammar in enumerate(abstractGrammars):
     features[ix, 1] = consonance
 
 # Cluster with KMeans, 3 clusters.
-kmeans = KMeans(n_clusters=3)
+kmeans = KMeans(n_clusters=2)
 kmeans.fit(features)
 clusterLabels = list(kmeans.labels_)
 
@@ -273,7 +273,7 @@ def chooseRankedGrammar(index, vals):
         toward beginning of piece, so give higher weight to the elements in
         vals that have fewer notes. """ 
     pass
-    
+
 # One measure test: generate a label (based on last label of
 # the original dataset, since only one measure here), and create notes
 # for it. Test measure = 1st measure of training set.
@@ -322,7 +322,7 @@ for i in range(1, len(allMeasures_chords)): # prev: len(allMeasures_chords)
     # pdb.set_trace()
 
     # Final thing to do: insert the instrument.
-    m1_notes.insert(0, instrument.ElectricGuitar())
+    # m1_notes.insert(0, instrument.ElectricGuitar())
 
     for m in m1_notes:
         genStream.insert(currOffset + m.offset, m)
@@ -338,6 +338,8 @@ for i in range(1, len(allMeasures_chords)): # prev: len(allMeasures_chords)
 
     # genStream.append(m)
 
+genStream.insert(0.0, instrument.ElectricGuitar())
+genStream.insert(0.0, tempo.MetronomeMark(144))
 # play(genStream)
 
 
