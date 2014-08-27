@@ -283,13 +283,13 @@ for i in range(1, len(allMeasures_chords)-1):
 
     # prune notes based on how far into solo
     # TODO: work on this. Can start by running and getting toRemove formula right.
-    noteIxs = [ix for ix, j in enumerate(m1_notes) if isinstance(j, note.Note)]
-    try: 
-        toRemove = min(3, random.sample(noteIxs, int(math.sqrt(len(noteIxs)) / i)))
-    except TypeError:
-        pdb.set_trace()
-    for i in toRemove:
-        m1_notes.remove(m1[i])
+    # noteIxs = [ix for ix, j in enumerate(m1_notes) if isinstance(j, note.Note)]
+    # try: 
+    #     toRemove = min(3, random.sample(noteIxs, int(math.sqrt(len(noteIxs)) / i)))
+    # except TypeError:
+    #     pdb.set_trace()
+    # for i in toRemove:
+    #     m1_notes.remove(m1[i])
 
     m = stream.Measure()
     m.insert(0, m1_chords)
