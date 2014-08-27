@@ -203,7 +203,7 @@ def parseMelody(fullMeasureNotes, fullMeasureChords):
                 prevNote = nr
             else:
                 noteDist = interval.Interval(noteStart=prevNote, noteEnd=nr)
-                noteDistUpper = interval.add([noteDist, "m3"])
+                noteDistUpper = interval.add([noteDist, "P4"])
                 noteDistLower = interval.subtract([noteDist, "m3"])
                 intervalInfo = ",<%s,%s>" % (noteDistUpper.directedName, 
                     noteDistLower.directedName)
@@ -257,6 +257,7 @@ def unparseGrammar(m1_grammar, m1_chords):
         # is for the first note (no precedent), or for rests.
         if (len(terms) == 2): # Case 1: if no < >.
             insertNote = note.Note() # default is C
+
             # Case C: chord note.
             if terms[0] == 'C':
                 insertNote = genChordTone(lastChord)
@@ -272,8 +273,8 @@ def unparseGrammar(m1_grammar, m1_chords):
 
             # Update the stream of generated notes
             insertNote.quarterLength = float(terms[1])
-            if insertNote.octave < 3:
-                insertNote.octave = 3
+            if insertNote.octave < 4:
+                insertNote.octave = 4
             m1_elements.insert(currOffset, insertNote)
             prevElement = insertNote
 

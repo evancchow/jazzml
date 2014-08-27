@@ -333,7 +333,12 @@ for i in range(1, loopEnd): # prev: len(allMeasures_chords)
     # for i in toRemove:
     #     m1_notes.remove(m1[i])
 
-    # Pruning #1: remove repeated notes, and notes WAY too close together.
+    
+    # Pruning #1: "Smooth" the measure, or make sure that everything is in 
+    # standard note lengths (0.125, 0.250, 0.333 ... nothing like .482).
+    pdb.set_trace()
+
+    # Pruning #2: remove repeated notes, and notes WAY too close together.
     # pdb.set_trace()
     for n1, n2 in grouper(m1_notes, n=2):
         if n2 == None: # corner case: odd-length list
@@ -344,9 +349,6 @@ for i in range(1, loopEnd): # prev: len(allMeasures_chords)
         if isinstance(n1, note.Note) and isinstance(n2, note.Note):
             if n1.nameWithOctave == n2.nameWithOctave:
                 m1_notes.remove(n2)
-
-
-    # pdb.set_trace()
 
     # Final thing to do: insert the instrument.
     # m1_notes.insert(0, instrument.ElectricGuitar())
