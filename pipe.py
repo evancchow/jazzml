@@ -337,7 +337,7 @@ for i in range(1, loopEnd): # prev: len(allMeasures_chords)
         m1_chords.insert((j.offset % 4), j)
     m1_label = grammarProbDist[lastLabel].generate()
     m1_grammar = chooseRankedGrammar(i, loopEnd, clusterDict[m1_label]) \
-        .replace(' C',' C') \
+        .replace(' A',' C') \
         .replace(' X',' C') \
         .replace(' S',' C')
 
