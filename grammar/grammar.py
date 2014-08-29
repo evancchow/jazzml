@@ -204,7 +204,7 @@ def parseMelody(fullMeasureNotes, fullMeasureChords):
             else:
                 noteDist = interval.Interval(noteStart=prevNote, noteEnd=nr)
                 noteDistUpper = interval.add([noteDist, "P4"])
-                noteDistLower = interval.subtract([noteDist, "P4"])
+                noteDistLower = interval.subtract([noteDist, "m3"])
                 intervalInfo = ",<%s,%s>" % (noteDistUpper.directedName, 
                     noteDistLower.directedName)
                 # print "Upper, lower: %s, %s" % (noteDistUpper,
