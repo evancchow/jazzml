@@ -296,14 +296,11 @@ def chooseRankedGrammar(currIndex, indexEnd, currVals):
         x.split(' ') if 'R' not in i]))
     # Minimum # of notes: 10
     # pdb.set_trace()
-    # rankedVals = [i for i in rankedVals \
-        # if (len(i.split(' ')) - i.count('R')) >= 12]
-    # pdb.set_trace()
     # Index function: finalIx = (currIndex / indexEnd)**2. Parabola.
-    chooseIndex = (np.sqrt(float(currIndex) / indexEnd)) * len(rankedVals)
+    chooseIndex = (np.sqrt(np.sqrt(float(currIndex) / indexEnd))) * len(rankedVals)
     # Choose upper or lower element of chooseIndex (a float) for randomness
     # pdb.set_trace()
-    if (currIndex < len(currVals)):
+    if (currIndex < len(rankedVals)):
         randIndex = int(random.choice([np.floor(chooseIndex), np.ceil(chooseIndex)]))
     else:
         randIndex = int(np.floor(chooseIndex))
