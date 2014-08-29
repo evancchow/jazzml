@@ -327,16 +327,16 @@ genStream = stream.Stream()
 currOffset = 0
 loopEnd = len(allMeasures_chords)
 
-for i in range(1, loopEnd): # prev: len(allMeasures_chords)
+for loopIndex in range(1, loopEnd): # prev: len(allMeasures_chords)
     # if i == 4:
     #     pdb.set_trace()
     # print "On iteration %s ..." % i
 
     m1_chords = stream.Voice()
-    for j in allMeasures_chords[i]:
+    for j in allMeasures_chords[loopIndex]:
         m1_chords.insert((j.offset % 4), j)
     m1_label = grammarProbDist[lastLabel].generate()
-    m1_grammar = chooseRankedGrammar(i, loopEnd, clusterDict[m1_label]) \
+    m1_grammar = chooseRankedGrammar(loopIndex, loopEnd, clusterDict[m1_label]) \
         .replace(' A',' C') \
         .replace(' X',' C') \
         .replace(' S',' C')
@@ -358,7 +358,7 @@ for i in range(1, loopEnd): # prev: len(allMeasures_chords)
     # pdb.set_trace() # see why losing so many notes at end
 
     # QA: print number of notes in m1_notes. Should see general increasing trend.
-    print "Iteration %s: %s notes" % (i, len([i for i in m1_notes
+    print "Iteration %s: %s notes" % (loopIndex, len([i for i in m1_notes
         if isinstance(i, note.Note)]))
 
     # Pruning #2: remove repeated notes, and notes WAY too close together.
@@ -366,7 +366,7 @@ for i in range(1, loopEnd): # prev: len(allMeasures_chords)
         if n2 == None: # corner case: odd-length list
             continue
         if (n2.offset - n1.offset) < 0.125:
-            if random.choice([True, True, False]):
+            if random.choice(([True, True, False])):
                 m1_notes.remove(n2)
         if isinstance(n1, note.Note) and isinstance(n2, note.Note):
             if n1.nameWithOctave == n2.nameWithOctave:
