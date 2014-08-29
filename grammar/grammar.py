@@ -63,15 +63,11 @@ def genScaleTone(lastChord):
 
     # Derive major or minor scales (minor if 'other') based on the quality
     # of the lastChord.
-    scaleType = scale.MinorScale()
+    scaleType = scale.WeightedHexatonicBlues() # minor pentatonic
     if lastChord.quality == 'major':
         scaleType = scale.MajorScale()
-    elif lastChord.quality == 'minor':
-        scaleType = scale.MinorScale() # i.e. minor pentatonic
     elif lastChord.quality == 'augmented':
         scaleType = scale.WholeToneScale()
-    else:
-        scaleType = scale.MajorScale()
     # Can change later to deriveAll() for flexibility. If so then use list
     # comprehension of form [x for a in b for x in a].
     scales = scaleType.derive(lastChord) # use deriveAll() later for flexibility
@@ -203,7 +199,7 @@ def parseMelody(fullMeasureNotes, fullMeasureChords):
                 prevNote = nr
             else:
                 noteDist = interval.Interval(noteStart=prevNote, noteEnd=nr)
-                noteDistUpper = interval.add([noteDist, "P4"])
+                noteDistUpper = interval.add([noteDist, "m3"])
                 noteDistLower = interval.subtract([noteDist, "m3"])
                 intervalInfo = ",<%s,%s>" % (noteDistUpper.directedName, 
                     noteDistLower.directedName)

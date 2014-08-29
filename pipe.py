@@ -29,7 +29,15 @@ def roundDown(num, mult):
 
 def roundUp(num, mult):
     """ Round up num to nearest multiple of mult. """
-    return
+    return roundDown(num, mult) + mult
+
+def roundUpDown(num, mult, upDown):
+    """ Based if upDown < 0 or upDown >= 0, rounds number down or up
+        respectively to nearest multiple of mult. """
+    if upDown < 0:
+        return roundDown(num, mult)
+    else:
+        return roundDown(num, mult)
 
 # Print a formatted note or rest.
 def pretty(element):
@@ -37,6 +45,10 @@ def pretty(element):
         return ppn(element)
     else:
         return ppr(element)
+
+# Pretty print a stream of notes/rests:
+def prettyPrint(notes):
+    for i in notes: print "%.3f  %s" % (i.offset, i)
 
 # Print list and stuff.
 def compareGen(m1_grammar, m1_elements):
@@ -338,23 +350,26 @@ for loopIndex in range(1, loopEnd): # prev: len(allMeasures_chords)
     m1_label = grammarProbDist[lastLabel].generate()
     m1_grammar = chooseRankedGrammar(loopIndex, loopEnd, clusterDict[m1_label]) \
         .replace(' A',' C') \
-        .replace(' X',' C') \
-        .replace(' S',' C')
+        .replace(' X',' C') 
+        # .replace(' S',' C')
 
     # Pruning #1: "Smooth" the measure, or make sure that everything is in 
     # standard note lengths (0.125, 0.250, 0.333 ... nothing like .482).
     # Maybe just start with rounding to nearest multiple of 0.125.
+    print "Grammar generated"
     # pdb.set_trace()
     m1_grammar = m1_grammar.split(' ')
     for ix, gram in enumerate(m1_grammar):
         terms = gram.split(',')
         terms[1] = str(roundDown(float(terms[1]), 0.250))
+        # terms[1] = str(roundUpDown(float(terms[1]), 0.250, random.choice([-1, 1])))
         m1_grammar[ix] = ','.join(terms)
     m1_grammar = ' '.join(m1_grammar)   
 
     m1_notes = unparseGrammar(m1_grammar, m1_chords)
 
     # initial notes
+    print "Raw notes generated"
     # pdb.set_trace() # see why losing so many notes at end
 
     # QA: print number of notes in m1_notes. Should see general increasing trend.
@@ -366,7 +381,7 @@ for loopIndex in range(1, loopEnd): # prev: len(allMeasures_chords)
         if n2 == None: # corner case: odd-length list
             continue
         if (n2.offset - n1.offset) < 0.125:
-            if random.choice(([True, True, False])):
+            if random.choice(([True] * 10 + [False] * (loopIndex)**2)):
                 m1_notes.remove(n2)
         if isinstance(n1, note.Note) and isinstance(n2, note.Note):
             if n1.nameWithOctave == n2.nameWithOctave:
