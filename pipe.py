@@ -363,6 +363,33 @@ for loopIndex in range(1, loopEnd): # prev: len(allMeasures_chords
 
     m1_notes = unparseGrammar(m1_grammar, m1_chords)
 
+    pdb.set_trace()
+
+    ##########################################
+    # TODO: look at m1_notes right here. If you see notes that are at the same
+    # offset, eg.
+    # 
+    # 0.5 n1
+    # 0.5 n2
+    # 0.5 n3
+    # 1.75 n4
+    # 
+    #
+    # Find more creative ways to distribute notes instead of just getting rid
+    # of n2, n3 since at same offset (which you do right here). For example, maybe
+    # you might find (1.75 - 0.5) = 1.25 of free quarter note length space, so maybe
+    # distribute the notes equally (or even not, generate partiion - e.g.
+    # 0.5, 0.5, 0.25).
+    # 
+    # Another note: don't update the list in place. Just collect the new offsets
+    # for those notes (e.g. n2, n3) and where they are (indices), and change them
+    # later.
+    #
+    # This way, you won't have to prune so many notes.
+    #
+    ###########################################
+
+
     # Pruning #2: remove repeated notes, and notes WAY too close together.
     for n1, n2 in grouper(m1_notes, n=2):
         if n2 == None: # corner case: odd-length list
@@ -374,10 +401,12 @@ for loopIndex in range(1, loopEnd): # prev: len(allMeasures_chords
             if n1.nameWithOctave == n2.nameWithOctave:
                 m1_notes.remove(n2)
 
+    pdb.set_trace()
+
     # Quality assurance.
     removeIxs = []
     for ix, m in enumerate(m1_notes):
-        # QA: make sure nothing is of 0 quarter note length.
+        # QA: make sure nothing is of 0 quarter note length - else changes its len.
         if (m.quarterLength == 0.0):
             m.quarterLength = 0.250
         # QA: make sure no two melody notes have same offset, i.e. form a chord.
@@ -392,7 +421,6 @@ for loopIndex in range(1, loopEnd): # prev: len(allMeasures_chords
     # QA: print number of notes in m1_notes. Should see general increasing trend.
     print "After pruning: %s notes" % (len([i for i in m1_notes
         if isinstance(i, note.Note)]))
-    pdb.set_trace()
 
     # after quality assurance
     # pdb.set_trace()
