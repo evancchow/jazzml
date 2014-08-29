@@ -302,7 +302,7 @@ def chooseRankedGrammar(currIndex, indexEnd, currVals):
     # Minimum # of notes: 10
     # pdb.set_trace()
     # Index function: finalIx = (currIndex / indexEnd)**2. Parabola.
-    chooseIndex = (np.sqrt(np.sqrt(float(currIndex) / indexEnd))) * len(rankedVals)
+    chooseIndex = (np.sqrt(float(currIndex) / indexEnd)) * len(rankedVals)
     # Choose upper or lower element of chooseIndex (a float) for randomness
     # pdb.set_trace()
     if (currIndex < len(rankedVals)):
@@ -337,8 +337,9 @@ for i in range(1, loopEnd): # prev: len(allMeasures_chords)
         m1_chords.insert((j.offset % 4), j)
     m1_label = grammarProbDist[lastLabel].generate()
     m1_grammar = chooseRankedGrammar(i, loopEnd, clusterDict[m1_label]) \
-        .replace(' A',' C').replace(' X',' C').replace(' S',' C')
-        # .replace(' C', ' S').replace(' X', ' S').replace(' A', ' S')
+        .replace(' C',' C') \
+        .replace(' X',' C') \
+        .replace(' S',' C')
 
     # Pruning #1: "Smooth" the measure, or make sure that everything is in 
     # standard note lengths (0.125, 0.250, 0.333 ... nothing like .482).
