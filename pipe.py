@@ -314,7 +314,7 @@ def chooseRankedGrammar(currIndex, indexEnd, currVals):
     # Minimum # of notes: 10
     # pdb.set_trace()
     # Index function: finalIx = (currIndex / indexEnd)**2. Parabola.
-    chooseIndex = (np.sqrt(float(currIndex) / indexEnd)) * len(rankedVals)
+    chooseIndex = np.sqrt((np.sqrt(float(currIndex) / indexEnd))) * len(rankedVals)
     # Choose upper or lower element of chooseIndex (a float) for randomness
     # pdb.set_trace()
     if (currIndex < len(rankedVals)):
@@ -339,10 +339,7 @@ genStream = stream.Stream()
 currOffset = 0
 loopEnd = len(allMeasures_chords)
 
-for loopIndex in range(1, loopEnd): # prev: len(allMeasures_chords)
-    # if i == 4:
-    #     pdb.set_trace()
-    # print "On iteration %s ..." % i
+for loopIndex in range(1, loopEnd): # prev: len(allMeasures_chords
 
     m1_chords = stream.Voice()
     for j in allMeasures_chords[loopIndex]:
@@ -356,25 +353,15 @@ for loopIndex in range(1, loopEnd): # prev: len(allMeasures_chords)
     # Pruning #1: "Smooth" the measure, or make sure that everything is in 
     # standard note lengths (0.125, 0.250, 0.333 ... nothing like .482).
     # Maybe just start with rounding to nearest multiple of 0.125.
-    print "Grammar generated"
-    # pdb.set_trace()
     m1_grammar = m1_grammar.split(' ')
     for ix, gram in enumerate(m1_grammar):
         terms = gram.split(',')
-        terms[1] = str(roundDown(float(terms[1]), 0.250))
-        # terms[1] = str(roundUpDown(float(terms[1]), 0.250, random.choice([-1, 1])))
+        # terms[1] = str(roundDown(float(terms[1]), 0.250))
+        terms[1] = str(roundUpDown(float(terms[1]), 0.250, random.choice([-1, 1])))
         m1_grammar[ix] = ','.join(terms)
     m1_grammar = ' '.join(m1_grammar)   
 
     m1_notes = unparseGrammar(m1_grammar, m1_chords)
-
-    # initial notes
-    print "Raw notes generated"
-    # pdb.set_trace() # see why losing so many notes at end
-
-    # QA: print number of notes in m1_notes. Should see general increasing trend.
-    print "Iteration %s: %s notes" % (loopIndex, len([i for i in m1_notes
-        if isinstance(i, note.Note)]))
 
     # Pruning #2: remove repeated notes, and notes WAY too close together.
     for n1, n2 in grouper(m1_notes, n=2):
@@ -386,9 +373,6 @@ for loopIndex in range(1, loopEnd): # prev: len(allMeasures_chords)
         if isinstance(n1, note.Note) and isinstance(n2, note.Note):
             if n1.nameWithOctave == n2.nameWithOctave:
                 m1_notes.remove(n2)
-
-    # before quality assurance
-    # pdb.set_trace()
 
     # Quality assurance.
     removeIxs = []
@@ -403,6 +387,12 @@ for loopIndex in range(1, loopEnd): # prev: len(allMeasures_chords)
                 isinstance(m1_notes[ix + 1], note.Note)):
                 removeIxs.append((ix + 1))
     m1_notes = [i for ix, i in enumerate(m1_notes) if ix not in removeIxs]
+
+
+    # QA: print number of notes in m1_notes. Should see general increasing trend.
+    print "After pruning: %s notes" % (len([i for i in m1_notes
+        if isinstance(i, note.Note)]))
+    pdb.set_trace()
 
     # after quality assurance
     # pdb.set_trace()
