@@ -22,9 +22,14 @@ tail = lambda x: x[:-6:-1] # from R
 ppr = lambda n: "%.3f   %s, %.3f" % (n.offset, n, n.quarterLength) # pretty print note + offset
 ppn = lambda n: "%.3f   %s, %.3f" % (n.offset, n.nameWithOctave, n.quarterLength)
 trc = lambda s: "%s ..." % (s[0:10]) # pretty print first few chars of str
+
 def roundDown(num, mult):
     """ Round down num to the nearest multiple of mult. """
-    return (float(num) - (float(num) % mult)) 
+    return (float(num) - (float(num) % mult))
+
+def roundUp(num, mult):
+    """ Round up num to nearest multiple of mult. """
+    return
 
 # Print a formatted note or rest.
 def pretty(element):
@@ -332,7 +337,7 @@ for i in range(1, loopEnd): # prev: len(allMeasures_chords)
         m1_chords.insert((j.offset % 4), j)
     m1_label = grammarProbDist[lastLabel].generate()
     m1_grammar = chooseRankedGrammar(i, loopEnd, clusterDict[m1_label]) \
-        .replace(' A',' C').replace(' X',' C').replace(' S', ' C')
+        .replace(' A',' C').replace(' X',' C').replace(' S',' C')
         # .replace(' C', ' S').replace(' X', ' S').replace(' A', ' S')
 
     # Pruning #1: "Smooth" the measure, or make sure that everything is in 
@@ -345,24 +350,15 @@ for i in range(1, loopEnd): # prev: len(allMeasures_chords)
         terms[1] = str(roundDown(float(terms[1]), 0.250))
         m1_grammar[ix] = ','.join(terms)
     m1_grammar = ' '.join(m1_grammar)   
-    # pdb.set_trace()
 
     m1_notes = unparseGrammar(m1_grammar, m1_chords)
+
+    # initial notes
+    # pdb.set_trace() # see why losing so many notes at end
 
     # QA: print number of notes in m1_notes. Should see general increasing trend.
     print "Iteration %s: %s notes" % (i, len([i for i in m1_notes
         if isinstance(i, note.Note)]))
-    # pdb.set_trace()
-
-    # prune notes based on how far into solo
-    # TODO: work on this. Can start by running and getting toRemove formula right.
-    # noteIxs = [ix for ix, j in enumerate(m1_notes) if isinstance(j, note.Note)]
-    # try: 
-    #     toRemove = min(3, random.sample(noteIxs, int(math.sqrt(len(noteIxs)) / i)))
-    # except TypeError:
-    #     pdb.set_trace()
-    # for i in toRemove:
-    #     m1_notes.remove(m1[i])
 
     # Pruning #2: remove repeated notes, and notes WAY too close together.
     for n1, n2 in grouper(m1_notes, n=2):
@@ -375,9 +371,7 @@ for i in range(1, loopEnd): # prev: len(allMeasures_chords)
             if n1.nameWithOctave == n2.nameWithOctave:
                 m1_notes.remove(n2)
 
-    # Final thing to do: insert the instrument.
-    # m1_notes.insert(0, instrument.ElectricGuitar())
-
+    # before quality assurance
     # pdb.set_trace()
 
     # Quality assurance.
@@ -394,6 +388,7 @@ for i in range(1, loopEnd): # prev: len(allMeasures_chords)
                 removeIxs.append((ix + 1))
     m1_notes = [i for ix, i in enumerate(m1_notes) if ix not in removeIxs]
 
+    # after quality assurance
     # pdb.set_trace()
     for m in m1_notes:
         genStream.insert(currOffset + m.offset, m)
