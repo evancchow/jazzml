@@ -296,8 +296,8 @@ def chooseRankedGrammar(currIndex, indexEnd, currVals):
         x.split(' ') if 'R' not in i]))
     # Minimum # of notes: 10
     # pdb.set_trace()
-    rankedVals = [i for i in rankedVals \
-        if (len(i.split(' ')) - i.count('R')) >= 12]
+    # rankedVals = [i for i in rankedVals \
+        # if (len(i.split(' ')) - i.count('R')) >= 12]
     # pdb.set_trace()
     # Index function: finalIx = (currIndex / indexEnd)**2. Parabola.
     chooseIndex = (np.sqrt(float(currIndex) / indexEnd)) * len(rankedVals)
@@ -397,7 +397,7 @@ for i in range(1, loopEnd): # prev: len(allMeasures_chords)
                 removeIxs.append((ix + 1))
     m1_notes = [i for ix, i in enumerate(m1_notes) if ix not in removeIxs]
 
-    pdb.set_trace()
+    # pdb.set_trace()
     for m in m1_notes:
         genStream.insert(currOffset + m.offset, m)
     for mc in m1_chords:
