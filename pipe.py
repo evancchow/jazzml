@@ -22,6 +22,9 @@ tail = lambda x: x[:-6:-1] # from R
 ppr = lambda n: "%.3f   %s, %.3f" % (n.offset, n, n.quarterLength) # pretty print note + offset
 ppn = lambda n: "%.3f   %s, %.3f" % (n.offset, n.nameWithOctave, n.quarterLength)
 trc = lambda s: "%s ..." % (s[0:10]) # pretty print first few chars of str
+def roundDown(num, mult):
+    """ Round down num to the nearest multiple of mult. """
+    return (float(num) - (float(num) % mult)) 
 
 # Print a formatted note or rest.
 def pretty(element):
@@ -291,6 +294,11 @@ def chooseRankedGrammar(currIndex, indexEnd, currVals):
 
     rankedVals = sorted(currVals, key=lambda x: len([i for i in \
         x.split(' ') if 'R' not in i]))
+    # Minimum # of notes: 10
+    # pdb.set_trace()
+    rankedVals = [i for i in rankedVals \
+        if (len(i.split(' ')) - i.count('R')) >= 12]
+    # pdb.set_trace()
     # Index function: finalIx = (currIndex / indexEnd)**2. Parabola.
     chooseIndex = (np.sqrt(float(currIndex) / indexEnd)) * len(rankedVals)
     # Choose upper or lower element of chooseIndex (a float) for randomness
@@ -300,7 +308,10 @@ def chooseRankedGrammar(currIndex, indexEnd, currVals):
     else:
         randIndex = int(np.floor(chooseIndex))
 
-    return rankedVals[randIndex]
+    try:
+        return rankedVals[randIndex]
+    except IndexError:
+        pdb.set_trace()
 
 # One measure test: generate a label (based on last label of
 # the original dataset, since only one measure here), and create notes
@@ -326,6 +337,19 @@ for i in range(1, loopEnd): # prev: len(allMeasures_chords)
     m1_grammar = chooseRankedGrammar(i, loopEnd, clusterDict[m1_label]) \
         .replace(' A',' C').replace(' X',' C').replace(' S', ' C')
         # .replace(' C', ' S').replace(' X', ' S').replace(' A', ' S')
+
+    # Pruning #1: "Smooth" the measure, or make sure that everything is in 
+    # standard note lengths (0.125, 0.250, 0.333 ... nothing like .482).
+    # Maybe just start with rounding to nearest multiple of 0.125.
+    # pdb.set_trace()
+    m1_grammar = m1_grammar.split(' ')
+    for ix, gram in enumerate(m1_grammar):
+        terms = gram.split(',')
+        terms[1] = str(roundDown(float(terms[1]), 0.250))
+        m1_grammar[ix] = ','.join(terms)
+    m1_grammar = ' '.join(m1_grammar)   
+    # pdb.set_trace()
+
     m1_notes = unparseGrammar(m1_grammar, m1_chords)
 
     # QA: print number of notes in m1_notes. Should see general increasing trend.
@@ -343,20 +367,13 @@ for i in range(1, loopEnd): # prev: len(allMeasures_chords)
     # for i in toRemove:
     #     m1_notes.remove(m1[i])
 
-
-    # Pruning #1: "Smooth" the measure, or make sure that everything is in 
-    # standard note lengths (0.125, 0.250, 0.333 ... nothing like .482).
-    # Maybe just start with rounding to nearest multiple of 0.125.
-    pdb.set_trace()
-
     # Pruning #2: remove repeated notes, and notes WAY too close together.
-    # pdb.set_trace()
     for n1, n2 in grouper(m1_notes, n=2):
         if n2 == None: # corner case: odd-length list
             continue
-        if (n2.offset - n1.offset) < 0.25:
+        if (n2.offset - n1.offset) < 0.125:
             if random.choice([True, True, False]):
-                m1_notes.remove(n2) 
+                m1_notes.remove(n2)
         if isinstance(n1, note.Note) and isinstance(n2, note.Note):
             if n1.nameWithOctave == n2.nameWithOctave:
                 m1_notes.remove(n2)
@@ -364,11 +381,29 @@ for i in range(1, loopEnd): # prev: len(allMeasures_chords)
     # Final thing to do: insert the instrument.
     # m1_notes.insert(0, instrument.ElectricGuitar())
 
+    # pdb.set_trace()
+
+    # Quality assurance.
+    removeIxs = []
+    for ix, m in enumerate(m1_notes):
+        # QA: make sure nothing is of 0 quarter note length.
+        if (m.quarterLength == 0.0):
+            m.quarterLength = 0.250
+        # QA: make sure no two melody notes have same offset, i.e. form a chord.
+        # Sorted, so same offset would be consecutive notes.
+        if (ix < (len(m1_notes) - 1)):
+            if (m.offset == m1_notes[ix + 1].offset and
+                isinstance(m1_notes[ix + 1], note.Note)):
+                removeIxs.append((ix + 1))
+    m1_notes = [i for ix, i in enumerate(m1_notes) if ix not in removeIxs]
+
+    pdb.set_trace()
     for m in m1_notes:
         genStream.insert(currOffset + m.offset, m)
     for mc in m1_chords:
         genStream.insert(currOffset + mc.offset, mc)
 
+    # pdb.set_trace()
     currOffset += 4.0
 
     # m = stream.Measure()
