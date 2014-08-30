@@ -22,6 +22,7 @@ tail = lambda x: x[:-6:-1] # from R
 ppr = lambda n: "%.3f   %s, %.3f" % (n.offset, n, n.quarterLength) # pretty print note + offset
 ppn = lambda n: "%.3f   %s, %.3f" % (n.offset, n.nameWithOctave, n.quarterLength)
 trc = lambda s: "%s ..." % (s[0:10]) # pretty print first few chars of str
+pnotes = lambda: prettyPrint(m1_notes)
 
 def roundDown(num, mult):
     """ Round down num to the nearest multiple of mult. """
@@ -363,38 +364,52 @@ for loopIndex in range(1, loopEnd): # prev: len(allMeasures_chords
 
     m1_notes = unparseGrammar(m1_grammar, m1_chords)
 
-    # fix: notes at offsets 0.2 [0.5 0.5 0.5] 0.8 ----> 0.2 [0.35 0.5 0.65] 0.8
-    m1_groupby = groupby(m1_notes, lambda x: x.offset)
-    m1_groups = OrderedDict()
-    for i, j in m1_groupby:
-        m1_groups[i] = list(j)
-    prevOffset = 0.0
-    nextOffset = 0.0
+
+    # QA: print number of notes in m1_notes. Should see general increasing trend.
+    print "Before pruning: %s notes" % (len([i for i in m1_notes
+        if isinstance(i, note.Note)]))
+
+
     # pdb.set_trace()
-    for ix, (offset, group) in enumerate(m1_groups.items()):
-        if ix == (len(m1_groups) - 1):
-            # do magic here
-            pass
-        else:
-            print ("insert")
-            prevOffset = m1_groups.keys()[ix]
-            nextOffset = m1_groups.keys()[ix + 1]
-            eachLength = (nextOffset - prevOffset) / (len(group) + 1)
-            for ix, groupElement in enumerate(group): # map
-                group[ix].offset = groupElement.offset + prevOffset * eachLength 
+
+
+    # Fix notes by adding 0.125 if note before is same offset. Good because this
+    # preserves the same grammar, just at different offset ("translation" transform).
+    # Then chop off all notes with offset > 4.0.
+    # Next step: do this only within chord offsets.
+    prevNote = None
     # pdb.set_trace()
-    m1_notes = stream.Voice()
-    for noteGroup in m1_groups.values():
-        for note in noteGroup:
-            m1_notes.insert(note.offset, note)
+    for ix, n in enumerate(m1_notes):
+        # pdb.set_trace()
+        print "Currently on iteration %s for note %s" % (ix, n)
+        if ix == 0:
+            prevNote = n
+            continue
+        if (m1_notes[ix - 1].offset > n.offset):
+            m1_notes[ix].offset = m1_notes[ix - 1].offset
+        if (m1_notes[ix - 1].offset == n.offset):
+            m1_notes[ix].offset += 0.250
+            prevNote = m1_notes[ix]
+
     # pdb.set_trace()
+
+    for n in m1_notes:
+        if (n.offset > 4.0): # maybe >= ?
+            m1_notes.remove(n)
+
+
+
+    # pdb.set_trace()
+
+
+
+
 
     # remember - later you can remove "if (n2.offset - n1.offset) < 0.125" since
     # already adjusted the note durations to be regular enough.
 
     # QA TODO: chop off notes with offset > 4.0.
 
-    #
     # pdb.set_trace()
 
     # fix: just split equally between [before, after).
