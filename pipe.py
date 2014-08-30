@@ -229,7 +229,7 @@ import numpy as np
 coefDict = {'C' : 0.8, 'S' : 0.6, 'A' : 0.4,'X' : 0.2, 'R' : 0.1 }
 
 # Extract features for each measure.
-features = np.empty([len(abstractGrammars), 2])
+features = np.empty([len(abstractGrammars), 3])
 for ix, currGrammar in enumerate(abstractGrammars):
     # TODO: maybe replace numDownSlope instead with a different feature:
     # number of times notes change direction.
@@ -238,15 +238,17 @@ for ix, currGrammar in enumerate(abstractGrammars):
     # pdb.set_trace()
     numDownSlope = currGrammar.count('-')
     consonance = 0.0
+    numNotes = 0
     for i in currGrammar.split(' '):
         terms = i.split(',')
         # increment # of notes if it's a note
         if terms[0] != 'R':
-            numDownSlope += 1
+            numNotes += 1
         # cumulatively calculate consonance for the measures
         consonance += coefDict[terms[0]] * float(terms[1])
     features[ix, 0] = numDownSlope
     features[ix, 1] = consonance
+    features[ix, 2] = numNotes
 
 # Cluster with KMeans, 3 clusters.
 kmeans = KMeans(n_clusters=2)
@@ -317,7 +319,7 @@ def chooseRankedGrammar(currIndex, indexEnd, currVals):
     chooseIndex = np.sqrt((np.sqrt(float(currIndex) / indexEnd))) * len(rankedVals)
     # Choose upper or lower element of chooseIndex (a float) for randomness
     # pdb.set_trace()
-    if (currIndex < len(rankedVals)):
+    if (currIndex < (len(rankedVals) - 1)):
         randIndex = int(random.choice([np.floor(chooseIndex), np.ceil(chooseIndex)]))
     else:
         randIndex = int(np.floor(chooseIndex))
@@ -325,6 +327,7 @@ def chooseRankedGrammar(currIndex, indexEnd, currVals):
     try:
         return rankedVals[randIndex]
     except IndexError:
+        print "Ran into bug while ranking the abstract grammars."
         pdb.set_trace()
 
 # One measure test: generate a label (based on last label of
@@ -364,7 +367,7 @@ for loopIndex in range(1, loopEnd): # prev: len(allMeasures_chords
     m1_notes = unparseGrammar(m1_grammar, m1_chords)
 
     # fix note offset problems, i.e. same offset so pruning too many.
-    
+
     # remember - later you can remove "if (n2.offset - n1.offset) < 0.125" since
     # already adjusted the note durations to be regular enough.
 
