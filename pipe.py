@@ -363,40 +363,12 @@ for loopIndex in range(1, loopEnd): # prev: len(allMeasures_chords
 
     m1_notes = unparseGrammar(m1_grammar, m1_chords)
 
-
+    # fix note offset problems, i.e. same offset so pruning too many.
+    
     # remember - later you can remove "if (n2.offset - n1.offset) < 0.125" since
     # already adjusted the note durations to be regular enough.
 
     # QA TODO: chop off notes with offset > 4.0.
-
-    #
-    # pdb.set_trace()
-
-    # fix: just split equally between [before, after).
-    ##########################################
-    # TODO: look at m1_notes right here. If you see notes that are at the same
-    # offset, eg.
-    # 
-    # 0.5 n1
-    # 0.5 n2
-    # 0.5 n3
-    # 1.75 n4
-    # 
-    #
-    # Find more creative ways to distribute notes instead of just getting rid
-    # of n2, n3 since at same offset (which you do right here). For example, maybe
-    # you might find (1.75 - 0.5) = 1.25 of free quarter note length space, so maybe
-    # distribute the notes equally (or even not, generate partiion - e.g.
-    # 0.5, 0.5, 0.25).
-    # 
-    # Another note: don't update the list in place. Just collect the new offsets
-    # for those notes (e.g. n2, n3) and where they are (indices), and change them
-    # later.
-    #
-    # This way, you won't have to prune so many notes.
-    #
-    ###########################################
-
 
     # Pruning #2: remove repeated notes, and notes WAY too close together.
     for n1, n2 in grouper(m1_notes, n=2):
