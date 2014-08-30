@@ -363,25 +363,38 @@ for loopIndex in range(1, loopEnd): # prev: len(allMeasures_chords
 
     m1_notes = unparseGrammar(m1_grammar, m1_chords)
 
-    #
+    # fix: notes at offsets 0.2 [0.5 0.5 0.5] 0.8 ----> 0.2 [0.35 0.5 0.65] 0.8
+    m1_groupby = groupby(m1_notes, lambda x: x.offset)
+    m1_groups = OrderedDict()
+    for i, j in m1_groupby:
+        m1_groups[i] = list(j)
+    prevOffset = 0.0
+    nextOffset = 0.0
+    # pdb.set_trace()
+    for ix, (offset, group) in enumerate(m1_groups.items()):
+        if ix == (len(m1_groups) - 1):
+            # do magic here
+            pass
+        else:
+            print ("insert")
+            prevOffset = m1_groups.keys()[ix]
+            nextOffset = m1_groups.keys()[ix + 1]
+            eachLength = (nextOffset - prevOffset) / (len(group) + 1)
+            for ix, groupElement in enumerate(group): # map
+                group[ix].offset = groupElement.offset + prevOffset * eachLength 
+    # pdb.set_trace()
+    m1_notes = stream.Voice()
+    for noteGroup in m1_groups.values():
+        for note in noteGroup:
+            m1_notes.insert(note.offset, note)
     # pdb.set_trace()
 
-    # # fix: notes at offsets 0.2 [0.5 0.5 0.5] 0.8 ----> 0.2 [0.35 0.5 0.65] 0.8
-    # m1_groupByOffset = groupby(m1_notes, lambda x: x.offset)
-    # for offset, group in m1_groupByOffset:
-    #     print "Group: ", offset
-    #     print "Notes: "
-    #     for g in group:
-    #         print g
-    #     print
-    
+    # remember - later you can remove "if (n2.offset - n1.offset) < 0.125" since
+    # already adjusted the note durations to be regular enough.
 
-    # # remember - later you can remove "if (n2.offset - n1.offset) < 0.125" since
-    # # already adjusted the note durations to be regular enough.
+    # QA TODO: chop off notes with offset > 4.0.
 
-    # # QA TODO: chop off notes with offset > 4.0.
-
-    # #
+    #
     # pdb.set_trace()
 
     # fix: just split equally between [before, after).
@@ -414,9 +427,9 @@ for loopIndex in range(1, loopEnd): # prev: len(allMeasures_chords
     for n1, n2 in grouper(m1_notes, n=2):
         if n2 == None: # corner case: odd-length list
             continue
-        if (n2.offset - n1.offset) < 0.125:
-            if random.choice(([True] * 10 + [False] * (loopIndex)**2)):
-                m1_notes.remove(n2)
+        # if (n2.offset - n1.offset) < 0.125:
+        #     if random.choice(([True] * 10 + [False] * (loopIndex)**2)):
+        #         m1_notes.remove(n2)
         if isinstance(n1, note.Note) and isinstance(n2, note.Note):
             if n1.nameWithOctave == n2.nameWithOctave:
                 m1_notes.remove(n2)
