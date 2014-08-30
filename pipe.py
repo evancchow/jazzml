@@ -48,7 +48,7 @@ def pretty(element):
 
 # Pretty print a stream of notes/rests:
 def prettyPrint(notes):
-    for i in notes: print "%.3f  %s" % (i.offset, i)
+    for i in notes: print pretty(i)
 
 # Print list and stuff.
 def compareGen(m1_grammar, m1_elements):
@@ -347,8 +347,8 @@ for loopIndex in range(1, loopEnd): # prev: len(allMeasures_chords
     m1_label = grammarProbDist[lastLabel].generate()
     m1_grammar = chooseRankedGrammar(loopIndex, loopEnd, clusterDict[m1_label]) \
         .replace(' A',' C') \
-        .replace(' X',' C') 
-        # .replace(' S',' C')
+        .replace(' X',' C') \
+        # .replace(' S',' C') # comment 
 
     # Pruning #1: "Smooth" the measure, or make sure that everything is in 
     # standard note lengths (0.125, 0.250, 0.333 ... nothing like .482).
@@ -363,8 +363,28 @@ for loopIndex in range(1, loopEnd): # prev: len(allMeasures_chords
 
     m1_notes = unparseGrammar(m1_grammar, m1_chords)
 
-    pdb.set_trace()
+    #
+    # pdb.set_trace()
 
+    # # fix: notes at offsets 0.2 [0.5 0.5 0.5] 0.8 ----> 0.2 [0.35 0.5 0.65] 0.8
+    # m1_groupByOffset = groupby(m1_notes, lambda x: x.offset)
+    # for offset, group in m1_groupByOffset:
+    #     print "Group: ", offset
+    #     print "Notes: "
+    #     for g in group:
+    #         print g
+    #     print
+    
+
+    # # remember - later you can remove "if (n2.offset - n1.offset) < 0.125" since
+    # # already adjusted the note durations to be regular enough.
+
+    # # QA TODO: chop off notes with offset > 4.0.
+
+    # #
+    # pdb.set_trace()
+
+    # fix: just split equally between [before, after).
     ##########################################
     # TODO: look at m1_notes right here. If you see notes that are at the same
     # offset, eg.
@@ -401,7 +421,7 @@ for loopIndex in range(1, loopEnd): # prev: len(allMeasures_chords
             if n1.nameWithOctave == n2.nameWithOctave:
                 m1_notes.remove(n2)
 
-    pdb.set_trace()
+    # pdb.set_trace()
 
     # Quality assurance.
     removeIxs = []

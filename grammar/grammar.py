@@ -66,8 +66,6 @@ def genScaleTone(lastChord):
     scaleType = scale.WeightedHexatonicBlues() # minor pentatonic
     if lastChord.quality == 'major':
         scaleType = scale.MajorScale()
-    elif lastChord.quality == 'augmented':
-        scaleType = scale.WholeToneScale()
     # Can change later to deriveAll() for flexibility. If so then use list
     # comprehension of form [x for a in b for x in a].
     scales = scaleType.derive(lastChord) # use deriveAll() later for flexibility
