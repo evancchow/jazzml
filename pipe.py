@@ -363,31 +363,6 @@ for loopIndex in range(1, loopEnd): # prev: len(allMeasures_chords
 
     m1_notes = unparseGrammar(m1_grammar, m1_chords)
 
-    # fix: notes at offsets 0.2 [0.5 0.5 0.5] 0.8 ----> 0.2 [0.35 0.5 0.65] 0.8
-    m1_groupby = groupby(m1_notes, lambda x: x.offset)
-    m1_groups = OrderedDict()
-    for i, j in m1_groupby:
-        m1_groups[i] = list(j)
-    prevOffset = 0.0
-    nextOffset = 0.0
-    # pdb.set_trace()
-    for ix, (offset, group) in enumerate(m1_groups.items()):
-        if ix == (len(m1_groups) - 1):
-            # do magic here
-            pass
-        else:
-            print ("insert")
-            prevOffset = m1_groups.keys()[ix]
-            nextOffset = m1_groups.keys()[ix + 1]
-            eachLength = (nextOffset - prevOffset) / (len(group) + 1)
-            for ix, groupElement in enumerate(group): # map
-                group[ix].offset = groupElement.offset + prevOffset * eachLength 
-    # pdb.set_trace()
-    m1_notes = stream.Voice()
-    for noteGroup in m1_groups.values():
-        for note in noteGroup:
-            m1_notes.insert(note.offset, note)
-    # pdb.set_trace()
 
     # remember - later you can remove "if (n2.offset - n1.offset) < 0.125" since
     # already adjusted the note durations to be regular enough.
