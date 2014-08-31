@@ -330,7 +330,7 @@ def chooseRankedGrammar(currIndex, indexEnd, currVals):
 
     # Try ranking consistently from high (more) to low (less).
     # Use a beta distribution with alpha = 2 and beta = 5.
-    floatIndex = np.random.beta(a = 2, b = 2, size = 1) * len(rankedVals)
+    floatIndex = np.random.beta(a = 2, b = 4, size = 1) * len(rankedVals)
     randIndex = int(random.choice([np.floor(floatIndex), np.ceil(floatIndex)]))
 
     try:
