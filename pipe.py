@@ -311,14 +311,18 @@ def chooseRankedGrammar(currIndex, indexEnd, currVals):
         tl;dr, play more notes the further you get into a solo (as a 
         general sort of trend). """ 
 
+    # pdb.set_trace()
+
     rankedVals = sorted(currVals, key=lambda x: len([i for i in \
         x.split(' ') if 'R' not in i]))
-    # Minimum # of notes: 10
+
     # pdb.set_trace()
+
     # Index function: finalIx = (currIndex / indexEnd)**2. Parabola.
+    # if currIndex / indexEnd = small, then chooseIndex also small.
     chooseIndex = np.sqrt((np.sqrt(float(currIndex) / indexEnd))) * len(rankedVals)
+
     # Choose upper or lower element of chooseIndex (a float) for randomness
-    # pdb.set_trace()
     if (currIndex < (len(rankedVals) - 1)):
         randIndex = int(random.choice([np.floor(chooseIndex), np.ceil(chooseIndex)]))
     else:
