@@ -314,23 +314,31 @@ def chooseRankedGrammar(currIndex, indexEnd, currVals):
     # pdb.set_trace()
 
     rankedVals = sorted(currVals, key=lambda x: len([i for i in \
-        x.split(' ') if 'R' not in i]))
+        x.split(' ') if 'R' not in i]), reverse=True)
 
     # pdb.set_trace()
 
-    # Index function: finalIx = (currIndex / indexEnd)**2. Parabola.
-    # if currIndex / indexEnd = small, then chooseIndex also small.
-    chooseIndex = np.sqrt((np.sqrt(float(currIndex) / indexEnd))) * len(rankedVals)
+    # # Index function: finalIx = (currIndex / indexEnd)**2. Parabola.
+    # # if currIndex / indexEnd = small, then floatIndex also small.
+    # floatIndex = np.sqrt((np.sqrt(float(currIndex) / indexEnd))) * len(rankedVals)
 
-    # Choose upper or lower element of chooseIndex (a float) for randomness
-    if (currIndex < (len(rankedVals) - 1)):
-        randIndex = int(random.choice([np.floor(chooseIndex), np.ceil(chooseIndex)]))
-    else:
-        randIndex = int(np.floor(chooseIndex))
+    # # Choose upper or lower element of floatIndex (a float) for randomness
+    # if (currIndex < (len(rankedVals) - 1)):
+    #     randIndex = int(random.choice([np.floor(floatIndex), np.ceil(floatIndex)]))
+    # else:
+    #     randIndex = int(np.floor(floatIndex))
+
+    # Try ranking consistently from high (more) to low (less).
+    # Use a beta distribution with alpha = 2 and beta = 5.
+    floatIndex = np.random.beta(a = 2, b = 2, size = 1) * len(rankedVals)
+    randIndex = int(random.choice([np.floor(floatIndex), np.ceil(floatIndex)]))
 
     try:
+        # pdb.set_trace()
+        print "Generated: %s" % (len([x for x in rankedVals[randIndex].split(' ') \
+            if 'R' not in x]))
         return rankedVals[randIndex]
-    except IndexError:
+    except TypeError:
         print "Ran into bug while ranking the abstract grammars."
         pdb.set_trace()
 
@@ -371,11 +379,12 @@ for loopIndex in range(1, loopEnd): # prev: len(allMeasures_chords
     m1_notes = unparseGrammar(m1_grammar, m1_chords)
 
     # fix note offset problems, i.e. same offset so pruning too many.
-
     # remember - later you can remove "if (n2.offset - n1.offset) < 0.125" since
     # already adjusted the note durations to be regular enough.
-
     # QA TODO: chop off notes with offset > 4.0.
+
+    # Another possible fix: get rid of 0.125 length notes ONLY if there are less
+    # than three of them in a row.
 
     # Pruning #2: remove repeated notes, and notes WAY too close together.
     for n1, n2 in grouper(m1_notes, n=2):
@@ -419,16 +428,5 @@ for loopIndex in range(1, loopEnd): # prev: len(allMeasures_chords
     # pdb.set_trace()
     currOffset += 4.0
 
-    # m = stream.Measure()
-    # m.insert(0, m1_chords)
-    # m.insert(0, m1_notes)
-    # m.insert(0, meter.TimeSignature('4/4'))
-
-    # genStream.append(m)
-
 genStream.insert(0.0, instrument.ElectricGuitar())
 genStream.insert(0.0, tempo.MetronomeMark(number=130))
-# play(genStream)
-
-
-# useful: compareGen(m1_grammar, m1_notes[1:])
