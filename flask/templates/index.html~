@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+  <style>
+    html, body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    }
+    .backgroundrect {
+    width: inherit;
+    padding: inherit;
+    display: block;
+    margin: 0 auto;
+    }
+    #toprect {
+    height: 35%;
+    background-color: #67C5C2;
+    }
+    #middlerect {
+    height: 40%;
+    background-color: #FEFCE8;
+    }
+    #bottomrect {
+    height: 30%;
+    background-color: #3D2117;
+    }
+    hline {    color: #000000;dkjkfgfg
+    height: 2px;
+    border: none;
+    background-color: #000000;
+    }
+  </style>
+  <head>
+    <script type="text/javascript" src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+    <script type="text/javascript" src="http://mbostock.github.com/d3/d3.js"></script>
+  </head>
+  <body>
+    <!-- Add the background. -->
+    <div id="toprect" class="backgroundrect"></div>
+    <div id="middlerect" class="backgroundrect">
+      <hr class="hline" style="height: 5%"></hr>
+      <hr class="hline" style="height: 10%"></hr>
+      <hr class="hline" style="height: 15%"></hr>
+      <hr class="hline" style="height: 20%"></hr>
+      <hr class="hline" style="height: 25%"></hr>
+    </div>
+    <div id="bottomrect" class="backgroundrect"></div>
+    <div id="viz"></div>
+    <script type="text/javascript" src="/static/music.js"></script>
+  </body>
+</html>

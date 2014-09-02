@@ -1,0 +1,52 @@
+// Javascript for d3.js for music app visualization.
+
+/* Update some HTML elements. */
+// var document_hlines = document.getElementById('hline');
+// var hlines_num = document_hlines.length;
+// var height = 20;
+// for (var i = 0; i < hlines_num; i++) {
+//     var line = document_hlines[i];
+//     line.style.height = height + "%";
+//     height = height + 20;
+// }
+// for (line in document_hlines) {
+//     line.style.height = height + "%";
+//     height += 10;
+// }
+
+/* Add the background. */
+
+var fullWidth = $(document).width();
+var fullHeight = $(document).height();
+
+
+
+
+
+// var svgTop = d3.select("body")
+//     .append("svg")
+//     .attr("width", fullWidth)
+//     .attr("height", fullHeight)
+
+// var toprect = svgTop
+//     .append("rect")
+//     .attr("id", "toprect")
+//     .attr("x", fullWidth / 2.0)
+//     .attr("y", fullHeight / 2.0)
+//     .attr("width", "10px")
+//     .attr("height", "10px")
+
+// Add a sample circle for demonstration purposes.
+// var sampleSVG = d3.select("#viz")
+//     .append("svg")
+//     .attr("width", 100)
+//     .attr("height", 100);    
+
+// sampleSVG.append("circle")
+//     .style("stroke", "gray")
+//     .style("fill", "white")
+//     .attr("r", 40)
+//     .attr("cx", 50)
+//     .attr("cy", 50)
+//     .on("mouseover", function(){d3.select(this).style("fill", "aliceblue");})
+//     .on("mouseout", function(){d3.select(this).style("fill", "white");});
