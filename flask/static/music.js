@@ -1,19 +1,5 @@
 // Javascript for d3.js for music app visualization.
 
-/* Update some HTML elements. */
-// var document_hlines = document.getElementById('hline');
-// var hlines_num = document_hlines.length;
-// var height = 20;
-// for (var i = 0; i < hlines_num; i++) {
-//     var line = document_hlines[i];
-//     line.style.height = height + "%";
-//     height = height + 20;
-// }
-// for (line in document_hlines) {
-//     line.style.height = height + "%";
-//     height += 10;
-// }
-
 /* Add the background. */
 
 var fullWidth = $(document).width();
@@ -64,3 +50,6 @@ clefs.enter()
     .attr("y", "65%")
     .attr("width", "10%")
     .attr("height", "25%")
+
+/* ---------------- Parse the MIDI file ---------------- */
+
