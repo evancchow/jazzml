@@ -1,7 +1,9 @@
 JazzML: Computational Jazz Improvisation
 ======
 
-Final project for COS 401: Introduction to Machine Translation. Computer jazz improvisation powered by machine learning,
+UPDATE: See branch "research" for the latest working demo of the project. When executed correctly (download all files, run "$ python pipe.py"), assuming all libraries are installed, it will generate guitar improvisation and play it against the prerecorded accompaniment.
+
+Computer jazz improvisation powered by machine learning,
 specifically trigram modeling, K-Means clustering, and chord inference with SVMs.
 
 Needs to be better modularized.
