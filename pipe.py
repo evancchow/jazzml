@@ -430,3 +430,7 @@ for loopIndex in range(1, loopEnd): # prev: len(allMeasures_chords
 
 genStream.insert(0.0, instrument.ElectricGuitar())
 genStream.insert(0.0, tempo.MetronomeMark(number=130))
+
+# Play the final stream (improvisation + accompaniment) through output
+# play is defined as a lambda function above
+play(genStream)
