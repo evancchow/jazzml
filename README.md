@@ -1,6 +1,10 @@
 JazzML: Computational Jazz Improvisation
 ======
 
+Originally inspired by Gillick et al. (2010):
+"Machine Learning of Jazz Grammars"
+http://www.mitpressjournals.org/doi/pdf/10.1162/COMJ_a_00006
+
 UPDATE: See branch "research" for the latest working demo of the project. When executed correctly (download all files, run "$ python pipe.py"), assuming all libraries are installed, it will generate guitar improvisation and play it against the prerecorded accompaniment.
 
 Computer jazz improvisation powered by machine learning,
